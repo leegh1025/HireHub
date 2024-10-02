@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<head id="header_style">
+    <link rel="stylesheet" href="{% static 'css/openai.css' %}">
+</head>
+{% endblock %}
+{% block content %}
+<div>
+    <div class="recommend_header">
+        <div class="recommend_logo">
+            <span>| AI Recommend</span>
+        </div>
+        <div class="recommend_navbar">
+            <button onclick="goBack()"><i class="ri-corner-down-left-fill"></i>프로필로 돌아가기</button>
+        </div>
+    </div>
+    <div class="recommend_content_container">
+        <div id="recommend_content_scroll">
+            <div>{{ questions|safe }}</div>
+        </div>
+    </div>
+</div>
+<script>
+    function goBack() {
+        window.history.back();
+    }
+    </script>
+{% endblock %}

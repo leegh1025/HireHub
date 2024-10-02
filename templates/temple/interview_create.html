@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+
+{% block title %}
+    Hire Hub
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/template/temp_create.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="createEntire">
+        <div class="createWrite">
+            <div class="createHeader">
+                <i class="ri-add-line"></i>
+                <p>Question</p>
+            </div>
+            <div class="createform">
+            <form method="post" id="template-form" class="templateForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="formTitle">
+                    <h2>질문지 제목</h2>
+                    {{ template_form.name }}
+                </div>
+                <div class="formContent">
+                    {{ template_form.description }}
+                </div>
+                <div class="formQuestion">
+                    <h2>질문 항목 추가</h2>
+                    <div>
+                        <input type="text" id="new_question_text" placeholder="항목을 입력하세요">
+                        <button type="button" onclick="addQuestion()">추가하기</button>
+                    </div>
+                    
+                </div>
+                <div id="question-form-container">
+                    {{ formset.management_form }}
+                </div>  
+                <button type="submit" class="createBtn">
+                    <i class="ri-add-line"></i>
+                    템플릿 생성하기
+                </button>
+            </form>
+        </div>
+        </div>
+
+        <div class="createPrev">
+            <h2>질문지 양식</h2>
+            <div id="preview" class="preview">
+                <h3>| 제목 </h3><span id="preview-title"> </span>
+                <h4>| 설명 </h4><span id="preview-description"></span>
+                <h4>| 질문 추가 </h4>
+                <ol id="question-list" class="questionList">
+
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questionCounter = 0;
+
+        function addQuestion() {
+            const questionText = document.getElementById('new_question_text').value;
+            if (questionText) {
+                const questionList = document.getElementById('question-list');
+                const form = document.getElementById('template-form');
+
+                const listItem = document.createElement('li');
+                const questionLabel = document.createElement('label');
+                questionLabel.textContent = questionText;
+                questionLabel.style.fontWeight = 'bold';
+
+                const questionInput = document.createElement('input');
+                questionInput.type = 'hidden';
+                questionInput.id = `question_${questionCounter}`;
+                questionInput.name = `questions[${questionCounter}]`;
+                questionInput.value = questionText;
+
+                listItem.appendChild(questionLabel);
+                form.appendChild(questionInput);
+                questionList.appendChild(listItem);
+                
+                document.getElementById('new_question_text').value = '';
+                console.log(`Added question: ${questionText}`);
+
+                questionCounter++;
+            }
+        }
+        
+        function updatePreview() {
+            const title = document.querySelector('input[name="name"]').value;
+            const description = document.querySelector('textarea[name="description"]').value;
+            document.getElementById('preview-title').innerText = title;
+            document.getElementById('preview-description').innerText = description;
+        }
+
+        document.querySelector('input[name="name"]').addEventListener('input', updatePreview);
+        document.querySelector('textarea[name="description"]').addEventListener('input', updatePreview);
+
+        document.getElementById('template-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();  
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            }).then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;  
+                } else {
+                    console.error('Form submission failed:', data.errors);
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/mainboard.css' %}">
+{% endblock %}
+{% block content %}
+<div class = "mainboard_container">
+    <div class="evaluate_list">
+        <p class="main_title">Work Space</p>
+        <div class="sort_container">
+            <select class="form-control" id="sortOrder">
+                <option value="">전체</option>
+                <option value="submitted">서류 제출</option>
+                <option value="scheduled">면접 예정</option>
+                <option value="in_progress">면접 중</option>
+                <option value="completed">면접 완료</option>
+            </select>
+        </div>
+        <div class="scroll_section">
+            {% for applicant in sort_applicants %}
+            <div class="my_applicant" onclick="location.href='{% url 'applicants:profile' applicant.pk %}';" style="cursor:pointer;">
+            
+                <ul class="applicant_info">
+                    <li id="name">{{applicant.name}}</li>
+                    <li class="info">{{applicant.school}}</li>
+                    <li class="info">{{applicant.major}}</li>
+                </ul>
+                <p>지원 날짜 : {{applicant.submission_date}}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="my_schedule">
+        <p class="main_title">My Schedule</p>
+        <div class="scroll_section">
+            <div class="schedule_content">
+                {% for applicant in applicants %}
+                    {% if applicant.status != 'submitted' %}
+                    <div class="schedule_info">
+                        <p id="schedule_name">{{applicant.name}}</p>
+                        <p id="schedule_date">면접 날짜 : {{applicant.interview_date}}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/mainboard.js' %}"></script>
+{% endblock %}

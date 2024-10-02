@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+    Hire Hub
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/interview.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="sideCtx">
+    <a href="{% url 'applicants:rankings' %}">지원자 순위</a>
+    <a href='{% url "applicants:schedule" %}'>면접 일정 보러가기</a>
+    <div class="search-applicant">
+        <div class="search_box">
+            <input type="text" id="applicant-search-input" placeholder="지원자 이름을 검색하세요.">
+            <button type="button" id="search-button"><i class="ri-search-line searchBtn"></i></button>
+        </div>
+        <ul id="applicant-search-results"></ul>
+    </div>
+    
+</div>
+<div class="applicant_container">
+    <div class="applicants_list">
+        <p>면접 대기</p>
+        <div class="scroll_section" id="1">
+            {% for applicant in applicants %}
+            {% if applicant.status == 'interview_scheduled' %}
+            <div class="each_applicant scheduled" draggable="true" id="{{applicant.id}}" onclick="location.href='{% url 'applicants:profile' applicant.pk %}';" style="cursor:pointer;">
+                <ul class="applicant_info">
+                    <li id="name" class="infoName">{{applicant.name}}</li>
+                    <li class="infoSch">{{applicant.school}}</li>
+                    <li class="infoMajor">{{applicant.major}}</li>
+                </ul>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="applicants_list">
+        <p>면접 진행 중</p>
+        <div class="scroll_section" id="2">
+            {% for applicant in applicants %}
+            {% if applicant.status == 'interview_in_progress' %}
+                <div class="each_applicant in_progress" draggable="true" id="{{applicant.id}}" onclick="location.href='{% url 'applicants:profile' applicant.pk %}';" style="cursor:pointer;">
+                    <ul class="applicant_info">
+                        <li id="name" class="infoName">{{applicant.name}}</li>
+                        <li class="infoSch">{{applicant.school}}</li>
+                        <li class="infoMajor">{{applicant.major}}</li>
+                    </ul>
+                </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="applicants_list">
+        <p>면접 완료</p>
+        <div class="scroll_section" id="3">
+            {% for applicant in applicants %}
+            {% if applicant.status == 'interview_completed' %}
+                <div class="each_applicant completed" draggable="true" id="{{applicant.id}}" onclick="location.href='{% url 'applicants:profile' applicant.pk %}';" style="cursor:pointer;">
+                    <ul class="applicant_info">
+                        <li id="name" class="infoName">{{applicant.name}}</li>
+                        <li class="infoSch">{{applicant.school}}</li>
+                        <li class="infoMajor">{{applicant.major}}</li>
+                    </ul>
+                </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    const searchApplicantUrl = "{% url 'applicants:search_applicant' %}";
+</script>
+<script src="{% static 'js/interview.js' %}"></script>
+{% endblock %}

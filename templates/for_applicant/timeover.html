@@ -1,0 +1,25 @@
+{% extends 'for_applicant/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="initial_applicant">
+        <p class="main_comment">지원 시간 마감</p>
+        <p class="main_logo">다음 기수에 지원해 주세요</p>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function adjustText() {
+                var element = document.querySelector('.main_comment');
+                if (window.innerWidth <= 580) {
+                    element.innerHTML = "지원 시간<br>마감";
+                } else {
+                    element.innerHTML = "지원 시간 마감";
+                }
+            }
+
+            adjustText();
+
+            window.addEventListener('resize', adjustText);
+        });
+    </script>
+{% endblock content %}

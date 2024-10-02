@@ -1,0 +1,39 @@
+{% extends 'for_applicant/base.html' %}
+{% load static %}
+
+{% block header %}
+    <div class="initial_btns">
+        <a class="link_check" href="{% url 'applicants:apply_check' %}">지원 상태 확인하기</a>
+        {% if time_over %}
+        <a class="link_write link_timeover" href="{% url 'applicants:timeover' %}">지원 마감</a>
+        {% else %}
+        <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block content %}
+    <div class="initial_applicant">
+        <p class="main_comment">효율적인 인재 영입의 시작</p>
+        <p class="main_logo">HIREHUB</p>
+        <div class="responsive_initial_btns">
+            <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
+            <a class="link_check" href="{% url 'applicants:apply_check' %}">지원 상태 확인하기</a>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function adjustText() {
+                var element = document.querySelector('.main_comment');
+                if (window.innerWidth <= 580) {
+                    element.innerHTML = "효율적인<br>인재 영입의 시작";
+                } else {
+                    element.innerHTML = "효율적인 인재 영입의 시작";
+                }
+            }
+
+            adjustText();
+
+            window.addEventListener('resize', adjustText);
+        });
+    </script>
+{% endblock content %}

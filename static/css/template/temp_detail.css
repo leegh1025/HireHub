@@ -1,0 +1,130 @@
+body {
+    min-width: 1280px;
+    height: 100vh;
+}
+
+.container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: center;
+    position: relative;
+}
+
+.tempDetail {
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    width: 85%;
+    height: 100%;
+    background-color: #FFFFFF;
+    position: absolute;
+    box-shadow: 0 0.4rem 2rem rgba(28,101,239, 0.2);
+    top: 0;
+    padding-right: 10px;
+}
+
+.detail_more {
+    display: flex;
+    justify-content: space-between;
+    user-select: none;
+    margin-bottom: 10px;
+}
+
+.detail_more > a {
+    font-size: 4rem;
+    color: var(--main-color);
+    cursor: pointer;
+    text-decoration: none;
+    padding-left: 5px;
+
+}
+
+.detail_more > i {
+    font-size: 4rem;
+    color: var(--main-color);
+    padding-right: 5px;
+    cursor: pointer;
+}
+
+.form-title {
+    border-radius: 20px 20px 0 0;
+    height: 80px;
+    color: #1C65EF;
+    font-size: 2.7rem;
+    font-weight: 700;
+    padding-top: 25px;
+}
+
+.tempCtx {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 0 0 20px;
+    overflow-y: auto;
+}
+
+.form-description > h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #A3A3A3;
+    margin-bottom: 10px;
+}
+
+.form-description > p {
+    font-size: 1.6rem;
+    font-weight: 500;
+    min-height: 30px;
+    display: block;
+    margin-left: 5px;
+    margin-bottom: 20px;
+    padding-top: 5px;
+    
+}
+
+.section-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #A3A3A3;
+}
+
+.questionList {
+    margin-left: 5px;
+}
+
+.questions-list > li {
+    font-size: 1.8rem;
+    font-weight: 500;
+    padding: 10px 0 0 5px ;
+}
+.question-item {
+    font-weight: 500;
+}
+
+.question-item > p { 
+    font-weight: bold;
+}
+
+.actions {
+    display: none;
+    background-color: var(--box-color);
+    padding: 10px;
+    position: absolute;
+    right: 20px;
+    top: 40px;
+}
+
+.btn-custom {
+    text-decoration: none;
+    color: var(--main-color);
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+.btn-delete {
+    text-decoration: none;
+    color: var(--main-color);
+    font-size: 1.8rem;
+    font-weight: 500;
+}

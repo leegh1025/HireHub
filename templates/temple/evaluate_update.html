@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+    Hire Hub
+{% endblock %}
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/template/temp_update.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="createEntire">
+        <div class="createWrite">
+            <div class="createTitle">
+                <i class="ri-edit-2-fill"></i>
+                <h1>Evaluation</h1>
+            </div>
+            <div class="createform">
+            <form method="post" id="template-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="formTitle">
+                <h2>평가표 제목</h2>
+                {{ template_form.title }}
+            </div>
+            <div class="formContent">
+                <h2>평가표 설명</h2>
+                {{ template_form.description }}
+            </div>
+            <div class="formQuestion">
+                <h2>평가 항목 추가</h2>
+                <div>
+                    <input type="text" id="new_question_title" placeholder="제목을 입력하세요">
+                    <input type="text" id="new_question_text" placeholder="내용을 입력하세요">
+                    <button type="button" onclick="addQuestion()">추가하기</button>
+                </div>
+            </div>
+            <div class="question-form-container">
+                <h2>항목 수정</h2>
+                <div id="question-form-container">
+                    <p>{{ formset.management_form }}</p>
+                    {% for form in formset %}
+                        <div class="form-group">
+                            {% for field in form %}
+                            <div class="form-field2">
+                                {{ field.errors }}
+                                {{ field }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="createBtn" onclick="submitForm()"><i class="ri-check-line"></i>수정 완료</button>
+            </div>
+            <button type="submit" style="display: none;"></button>
+        </form>
+    </div>
+    </div>
+        <!-- 미리보기 영역 -->
+        <div class="createPrev">
+            <h2>평가표 양식</h2>
+            <div id="preview" class="preview">
+                <h3>| 제목<span id="preview-title"></span></h3>
+                <h4>| 설명<span id="preview-description"></span></h4>
+                <h4>| 항목 추가 </h4>
+                <ol id="question-list" class="questionList">
+
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let questionCounter = 0;
+
+        function addQuestion() {
+            const questionTitle = document.getElementById('new_question_title').value;
+            const questionText = document.getElementById('new_question_text').value;
+
+            if (questionTitle && questionText) {
+                const questionFormContainer = document.getElementById('question-form-container');
+                const newForm = document.createElement('div');
+                newForm.className = 'question-form';
+
+                newForm.innerHTML = `
+                    <input type="hidden" name="questions_titles[${questionCounter}]" value="${questionTitle}">
+                    <input type="hidden" name="question_texts[${questionCounter}]" value="${questionText}">
+                `;
+                
+                questionFormContainer.appendChild(newForm);
+
+                const questionList = document.getElementById('question-list');
+                const listItem = document.createElement('li');
+                listItem.textContent = `${questionTitle}: ${questionText}`;
+                questionList.appendChild(listItem);
+
+                document.getElementById('new_question_title').value = '';
+                document.getElementById('new_question_text').value = '';
+                questionCounter++;
+            }
+        }
+
+        function updatePreview() {
+            const title = document.querySelector('input[name="title"]').value;
+            const description = document.querySelector('textarea[name="description"]').value;
+            document.getElementById('preview-title').innerText = title;
+            document.getElementById('preview-description').innerText = description;
+        }
+        document.querySelector('input[name="title"]').addEventListener('input', updatePreview);
+        document.querySelector('textarea[name="description"]').addEventListener('input', updatePreview);
+
+
+        function submitForm() {
+            const form = document.getElementById('template-form');
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method,
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();  
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            }).then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;  
+                } else {
+                    console.error('Form submission failed:', data.errors);
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+{% endblock %}

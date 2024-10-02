@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/document.css' %}">
+{% endblock %}
+{% block content %}
+<div class="document_container">
+    <div class="applicant_container">
+        <div class="applicants_list">
+            <p>지원자</p>
+            <div class="scroll_section" id="all_section">
+                {% for applicant in applicants %}
+                <div class="each_applicant all" id="applicant_all_{{ applicant.pk }}">
+                    <ul class="applicant_info" onclick="location.href='{% url 'applicants:profile' applicant.pk %}';" style="cursor:pointer;">
+                        <li id="name">{{applicant.name}}</li>
+                        <li class="info">{{applicant.school}}</li>
+                        <li class="info">{{applicant.major}}</li>
+                    </ul>
+                    <button onclick="confirmPassDocument({{ applicant.pk }}, '{{ applicant.name }}')" class="pass_btn">서류 합격</button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="passed_container">
+        <div class="passed_list">
+            <p>서류 합격자</p>
+            <div class="scroll_section" id="passed_section">
+                {% for applicant in applicants %}
+                {% if applicant.status != 'submitted' %}
+                    <div class="each_applicant pass" id="applicant_pass_{{ applicant.pk }}">
+                        <ul class="applicant_info" onclick="location.href='{% url 'applicants:profile' applicant.pk %}';" style="cursor:pointer;">
+                            <li id="name">{{applicant.name}}</li>
+                            <li class="info">{{applicant.school}}</li>
+                            <li class="info">{{applicant.major}}</li>
+                        </ul>
+                        <button onclick="confirmFailDocument({{ applicant.pk }}, '{{ applicant.name }}')" class="fail_btn">서류 탈락</button>
+                    </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function confirmPassDocument(applicantId, applicantName) {
+        const userConfirmed = confirm(`지원자 ${applicantName}을(를) 서류 합격 처리 하시겠습니까?`);
+        
+        if (userConfirmed) {
+            passDocument(applicantId);
+        }
+    }
+    function passDocument(applicantId) {
+        fetch(`/applicants/pass_document/${applicantId}/`, {
+            method: 'POST',
+            headers : {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'  
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const applicantElement = document.getElementById(`applicant_all_${applicantId}`);
+                const clonedApplicantElement = applicantElement.cloneNode(true);
+
+                const passButton = clonedApplicantElement.querySelector('.pass_btn');
+                passButton.textContent = '서류 탈락'
+                passButton.classList.remove('pass_btn');
+                passButton.classList.add('fail_btn');
+                passButton.setAttribute('onclick', `failDocument(${applicantId})`);
+
+                document.getElementById('passed_section').appendChild(clonedApplicantElement);
+            } else {
+                alert('서류 합격 처리 중 오류가 발생했습니다.');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
+    function confirmFailDocument(applicantId, applicantName) {
+        const userConfirmed = confirm(`지원자 ${applicantName}을(를) 서류 탈락 처리 하시겠습니까?`);
+        
+        if (userConfirmed) {
+            failDocument(applicantId);
+        }
+    }
+    function failDocument(applicantId) {
+        fetch(`/applicants/fail_document/${applicantId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const applicantElement = document.getElementById(`applicant_pass_${applicantId}`);
+
+                const failButton = applicantElement.querySelector('.fail_btn');
+                failButton.textContent = '서류 합격'
+                failButton.classList.remove('fail_btn');
+                failButton.classList.add('pass_btn');
+                failButton.setAttribute('onclick', `passDocument(${applicantId})`);
+
+                document.getElementById('all_section').appendChild(applicantElement);
+            } else {
+                alert('서류 탈락 처리 중 오류가 발생했습니다.');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+{% endblock %}

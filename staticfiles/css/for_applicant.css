@@ -1,0 +1,160 @@
+main {
+   padding: 1rem 3rem;
+}
+/* initial.html */
+.initial_btns a {
+   text-decoration: none;
+   font-size: 2rem;
+}
+.link_check {
+   color: black;
+}
+.link_write {
+   color: white;
+   background-color: var(--main-color);
+   padding: 1.3rem 2rem;
+   margin: 0 3rem;
+   border-radius: 1rem;
+   font-weight: 600;
+}
+.initial_applicant {
+   display: flex;
+   flex-direction: column;
+   height: 100%;
+   align-items: center;
+   justify-content: center;
+   color: black;
+}
+.main_comment {
+   font-size: 5rem;
+}
+.main_logo {
+   font-family: var(--eng-font);
+   font-size: 6rem;
+   font-weight: bold;
+   color: var(--main-color);
+}
+
+/* apply_check.html */
+.status_container {
+   height: 100%;
+   display: flex;
+}
+.status_left_container {
+   width: 50%;
+   height: 100%;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+.club_container {
+   width: 57rem;
+   height: 57.8rem;
+   box-shadow: 0 0.4rem 2rem rgba(28,101,239, 0.1);
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+}
+.club_name {
+   font-size: 3.2rem;
+   margin-bottom: 13rem;
+}
+.club_description {
+   font-size: 6rem;
+   font-weight: 600;
+   margin-bottom: 3rem;
+}
+
+.status_right_container {
+   width: 50%;
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+}
+.status_logo {
+   font-family: var(--eng-font);
+   font-size: 6rem;
+   font-weight: bold;
+   color: var(--main-color);
+   margin-bottom: 17rem;
+   text-align: center;
+}
+#statuscheck_form {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+#statuscheck_form input {
+   width: 50rem;
+   height: 6.5rem;
+   border-radius: 1.9rem;
+   font-size: 2.4rem;
+   color: black;
+   padding-left: 20px;
+   border: 2px solid var(--main-color);
+   margin-bottom: 1.5rem;
+}
+.status_container button {
+   font-size: 2.4rem;
+   font-weight: bold;
+   color: var(--main-color);
+   margin-top: 7.4rem;
+   margin-left: 32rem;
+   display: flex;
+   align-items: center;
+}
+.status_container button img {
+   width: 3.5rem;
+   height: 3.5rem;
+}
+
+fieldset {
+   border: none !important;
+}
+
+/* apply_result.html */
+.applyResult_container {
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   text-align: center;
+}
+.result_head {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+.result_head p {
+   font-family: var(--eng-font);
+   color: var(--main-color);
+   font-size: 6rem;
+   line-height: 8rem;
+   font-weight: 600;
+}
+.result_head img {
+   width: 9rem;
+   height: 9rem;
+}
+.result_comment, .resultno_comment {
+   font-size: 3.6rem;
+   margin-top: 7.8rem;
+   margin-bottom: 3rem;
+}
+.applyResult_container a {
+   display: flex;
+   align-items: center;
+   text-decoration: none;
+   font-size: 2rem;
+   font-weight: 600;
+   color: black;
+}
+.applyResult_container a img {
+   width: 2.4rem;
+   height: 2.4rem;
+   margin-right: 0.5rem;
+}

@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+      <link rel="stylesheet" href="{% static 'css/variable.css' %}">
+      <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+      <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+      <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+      <style>
+      body {
+            font-family: 'Pretendard', sans-serif;
+      }
+      </style>
+   {% block head %} {% endblock %}
+</head>
+<body>
+   <div class="login_container">
+      <div class="login_left_container">
+         <p class="login_head">LOG IN</p>
+         <div class="loginform_container">
+            <form method="POST" action="" id="login_form">
+               {% csrf_token %}
+               {{ form }}
+               <input class="login_btn" type="submit" value="면접관으로 로그인 하기" style="color: white; border: none">
+            </form>
+         </div>
+         <a class="signup_link" href="{% url 'accounts:signup' %}">
+            <img src="{% static 'images/rocket.png' %}">
+            <span>빠른 회원가입하기</span>
+         </a>
+      </div>
+      <div class="login_right_container">
+         <p class="login_comment">효율적인 인재 영입의 시작</p>
+         <p class="login_logo">HIREHUB</p>
+      </div>
+   </div>
+</body>
+</html>

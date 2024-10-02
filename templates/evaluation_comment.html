@@ -1,0 +1,47 @@
+{% load static %}
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/variable.css' %}">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif !important;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/evaluation_comment.css' %}">
+</head>
+<main>
+    <div class="evaluation_title">
+        <h1>| Comments of Evaluations</h1>
+    </div>
+    <section>
+        <div class="container">
+            <h2>{{application.name}}</h2>
+            <div class="interviewer" style="display: flex; gap: 0.5rem;">
+                <strong>담당 면접관:</strong>
+                <div>                        
+                    {% for interviewer in application.interviewer.all%}
+                    <span> {{ interviewer.name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="container_bottom">
+                <div class="comment_content">
+                    <ul class="comment_container">
+                        {% for evaluation in evaluations %}
+                        <li>
+                            <label class="interviewer_name">{{evaluation.interviewer.name}}의 한줄평</label>
+                            <p class="comment">{{evaluation.comments}}</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <button class="close-popup">닫기</button>
+            </div>
+        </div>
+    </section>
+</main>

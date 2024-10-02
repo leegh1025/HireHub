@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+   <div class="initial_interviewer">
+      <p class="main_logo">HIREHUB</p>
+      <p class="main_comment">오직 면접관을 위한 채용 서비스</p>
+      <a href="{% url 'accounts:login' %}">면접관으로 로그인 하기</a>
+   </div>
+{% endblock content %}

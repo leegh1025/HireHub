@@ -1,0 +1,75 @@
+{% load static %}
+{% block content %}
+<head id="header_style">
+    <link rel="stylesheet" href="{% static 'css/questions.css' %}">
+</head>
+
+    <div class="questions_section">
+        <div class="application_container">
+            <div class="application_content">
+                <div class="applicant_title">
+                    <h3 id="applicationTitle" class="clickable">지원서</h3>
+                    <h3 id="commonQuestionTitle" class="clickable"> | 공통 질문</h3>
+                </div>
+                <div id="applicationContent">
+                    {% for answer in answers %}
+                        <span class="question"><strong>{{ answer.question.question_text }}</strong></span>
+                        <p class="application_text">{{ answer.answer_text }}</p>
+        
+                    {% endfor %}
+                </div>
+                <div id="commonQuestionContent" style="display:none;">
+                    {% for common_question in common_questions %}
+                        <p class="question"><strong>{{ common_question.id }}. {{ common_question.question_text }}</strong></p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="questions">
+            <ul id="question_list">
+                {% for question in questions %}
+                <li class="individualquestion" data-question-id="{{ question.id }}">
+                    <div class="question" data-question-id="{{ question.id }}">
+                        질문: {{ question.text }}
+                        <div class="question_btn">
+                            <button class="deleteQuestionBtn" data-question-id="{{ question.id }}">삭제</button>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="question_box">
+                <form id="question-form" action="{% url 'applicants:question' applicant.pk %}" method="post">
+                    {% csrf_token %}
+                    {{ question_form.as_p }}
+                    <button type="submit"><i class="ri-send-plane-line"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'js/questions.js' %}"></script>
+<script>
+    $(document).ready(function() {
+        console.log('Document ready and jQuery is working');
+    
+        // 공통 질문/지원서 탭 전환
+        $('#commonQuestionTitle').on('click', function() {
+            console.log('공통 질문 클릭됨');
+            $('#commonQuestionContent').show();
+            $('#applicationContent').hide();
+        });
+    
+        $('#applicationTitle').on('click', function() {
+            console.log('지원서 클릭됨');
+            $('#applicationContent').show();
+            $('#commonQuestionContent').hide();
+        });
+
+        // 답변 폼 토글 기능 추가
+        $('.toggleAnswerForm').on('click', function() {
+            $(this).siblings('.answersheet').toggle(); // 현재 클릭된 버튼과 동일한 개별 질문 내의 폼만 토글
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,138 @@
+section {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+
+#evaluation_section {
+    height: calc(100% - 4.8rem);
+}
+
+#evaluation_section .container2 {
+    height: calc(100% - 14rem) !important;
+}
+
+
+#evaluation_section .container {
+    height: 100%;
+    box-shadow: 0 0.4rem 2rem rgba(28, 101, 239, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+
+#evaluation_section .container h2 {
+    font-size: 3rem;
+    color: var(--main-color);
+    margin-bottom: 10px;
+}
+#evaluation_section .container p {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+#evaluation_section #evaluationForm {
+    height: calc(100% - 90px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto;
+}
+
+#evaluation_section .evaluate_content {
+    display: flex;
+    flex-direction: column;
+    font-size: 2.4rem;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+#evaluation_section .evaluate_content > label {
+    display: none;
+}
+
+#evaluation_section .evaluate_content > textarea {
+    border-radius: 10px;
+    border: 2px solid var(--main-color);
+    height: 100px;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+#evaluation_section #comments {
+    border-radius: 10px;
+    border: 2px solid var(--main-color);
+    height: 100px;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+#evaluationForm > label {
+    display: none;
+}
+
+#evaluation_section .comments {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+}
+
+
+#evaluation_section .evaluate_content::-webkit-scrollbar {
+    width: 8px;
+}
+
+
+#evaluation_section .questions_list {
+    padding: 0;
+    margin: 0;
+    counter-reset: section;
+    
+}
+#evaluation_section .question {
+    margin-bottom: 20px;
+}
+
+#evaluation_section .question > span > input {
+    width: 70px;
+}
+
+#evaluation_section .question label {
+    margin-left: 10px;
+    font-weight: 400;
+    margin-bottom: 10px;
+}
+#evaluation_section .question label::before {
+    counter-increment: section;
+    content: counter(section) ". ";
+}
+#evaluation_section .container button {
+    background-color: var(--main-color);
+    color: white;
+    width: 20%;
+    height: 65px;
+    font-weight: bold;
+    font-size: 2.6rem;
+    border-radius: 10px;
+    margin-left: auto;
+
+
+}
+
+#evaluation_section .questions_list > .question > .score_number {
+    margin: 10px 10px 20px 20px !important;
+    font-size: 2rem;
+}
+
+#evaluation_section .questions_list > .question > .score_number > input {
+    border: 1px solid black;
+}
+
+#evaluation_section > main {
+    padding: 0;
+}
+
+#evaluation_section .total_score > h3 {
+    font-size: 2rem;
+}

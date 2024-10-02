@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<head id="header_style">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+</head>
+{% endblock %}
+{% block content %}
+<section>
+    <div class="profile_header">
+        <div class="profile_logo">
+            <span>| Profile</span>
+        </div>
+        <div class="profile_navbar">
+            <div class="application_text">
+                    <button id="deleteRecordingBtn" style="{% if not recording_exists %}display: none;{% endif %}"><i class="ri-delete-bin-5-fill"></i></button>
+                    <audio id="audioPlayback" controls style="display: none;"></audio>
+                    <button id="recordBtn"><i class="ri-circle-fill not-recording"></i>REC</button>
+            </div>
+            <i class="ri-menu-line"></i>
+            <div class="actions">
+                <button id="load-profile" data-applicant-id="{{applicant.pk}}">Profile</button>
+                <button id="load-comment" data-applicant-id="{{applicant.pk}}">Comment</button>
+                <button id="load-question" data-applicant-id="{{applicant.pk}}">Question</button>
+                <button id="load-evaluation" data-applicant-id="{{applicant.pk}}">Evaluation</button>
+                <a href="{% url 'interviews:generate_questions' applicant.pk %}">AI Recommend</a>
+            </div>
+        </div>
+        
+
+    </div>
+    <div class="profile_section">
+        <div class="profile_container">
+            <div class="profile_personal">
+                <div class="profile_name">{{ applicant.name }}</div>
+                <div class="profile_detail">
+                    <div class="profile_detail1">
+                        <p>학교</p>
+                        <p>학과</p>
+                        <p>연락처</p>
+                    </div>
+                    <div class="profile_detail2">
+                        <p>{{ applicant.school }}</p>
+                        <p>{{ applicant.major }}</p>
+                        <p>{{ applicant.phone_number }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="profile_interview">
+                <p><strong>면접상태:</strong> {{ applicant.get_status_display }}</p>
+                <p><strong>면접일:</strong> {{ applicant.interview_date }}</p>
+                <div style="display: flex; gap: 0.5rem;">
+                    <strong>면접관:</strong>
+                    <div>
+                        {% for interviewer in applicant.interviewer.all%}
+                        <span> {{ interviewer.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="application_container">
+            <p>Application</p>
+            <div class="application_content">
+                {% for answer in answers %}
+                    <p class="application_question"><strong>{{ answer.question.question_text }}</strong></p>
+                    <p class="application_answer">{{ answer.answer_text }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div id="comment_section" style="display:none;">
+        {% include 'applicant/comments.html' %}
+    </div>
+    <div id="question_section" style="display:none;">
+        {% include 'applicant/questions.html' %}
+    </div>
+    <div id="evaluation_section" style="display:none;"></div>
+</section>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="{% static 'js/profile.js' %}"></script>
+<script>
+    // URL을 미리 템플릿에서 렌더링하여 전달
+    var profileCssUrl = "{% static 'css/profile.css' %}";
+    var commentsCssUrl = "{% static 'css/comments.css' %}";
+    var questionsCssUrl = "{% static 'css/questions.css' %}";
+    var evaluateCssUrl = "{% static 'css/evaluate.css' %}";
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const toggleButton = document.querySelector(".ri-menu-line");
+        const actionsElement = document.querySelector(".actions");
+
+        toggleButton.addEventListener("click", function(event) {
+            event.preventDefault();
+            
+            const currentDisplay = window.getComputedStyle(actionsElement).display;
+
+            if (currentDisplay === "none") {
+                actionsElement.style.display = "flex";
+                toggleButton.classList.remove("ri-menu-line");
+                toggleButton.classList.add("ri-close-fill");
+            } else {
+                actionsElement.style.display = "none";
+                toggleButton.classList.remove("ri-close-fill");
+                toggleButton.classList.add("ri-menu-line");
+            }
+        });
+
+        actionsElement.addEventListener("click", function(event) {
+            // .actions 요소 클릭 시 숨기기
+            actionsElement.style.display = "none";
+            toggleButton.classList.remove("ri-close-fill");
+            toggleButton.classList.add("ri-menu-line");
+            event.stopPropagation(); // 클릭 이벤트가 document로 전파되지 않도록 함
+        });
+
+        // 문서 클릭 시 .actions 숨기기 (버튼을 제외한 클릭)
+        document.addEventListener("click", function(event) {
+            if (!actionsElement.contains(event.target) && !toggleButton.contains(event.target)) {
+                actionsElement.style.display = "none";
+                toggleButton.classList.remove("ri-close-fill");
+                toggleButton.classList.add("ri-menu-line");
+            }
+        });
+    });
+</script>
+{% endblock %}

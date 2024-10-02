@@ -1,0 +1,10 @@
+:root {
+   --lightprocess-color: rgba(21,52,72, .2);
+   --mediumprocess-color: rgba(21,52,72, .5);
+   --process-color: rgba(21,52,72, .7);
+   --main-color: #1C65EF;
+
+   --box-color: #FFFFFF;
+
+   --eng-font: "Montserrat", sans-serif;
+}

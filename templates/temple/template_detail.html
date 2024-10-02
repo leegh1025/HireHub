@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+
+{% block title %}
+    Hire Hub
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/template/temp_detail.css' %}">
+{% endblock %}
+    
+
+{% block content %}
+    <div class="container">
+        <div class="tempDetail">
+            <div class="detail_more">
+                <a class="back-link" href="{% url 'template:template_list' %}"><i class="ri-corner-down-left-fill"></i></a>
+                <h1 class="form-title">{{ template.name }}</h1>
+                <i class="ri-more-fill"></i>
+                <div class="actions">
+                    <a class="btn-custom" href="{% url 'template:template_update' pk=template.pk %}"><i class="ri-edit-2-fill"></i>수정하기</a>
+                        <form class="delete-form" action="{% url 'template:template_delete' pk=template.pk %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn-delete" type="submit" onclick="return confirm('정말 삭제하시겠습니까?');"><i class="ri-delete-bin-fill"></i>삭제하기</button>
+                    </form>
+                </div>
+            </div>
+            <div class="tempCtx">
+                <div class="form-description">
+                    <h3>| 설명</h3>
+                    <p> {{ template.description }}</p>
+                </div>
+                <div>
+                    <h2 class="section-title">| 질문 목록</h2>
+                    <ol class="questions-list">
+                        {% for question in questions %}
+                            <li class="question-item">{{ question.question_text }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const toggleButton = document.querySelector(".ri-more-fill");
+            const actionsElement = document.querySelector(".actions");
+
+            toggleButton.addEventListener("click", function(event) {
+                event.preventDefault(); 
+
+                // 초기 display 속성을 계산하여 가져옴
+                const currentDisplay = window.getComputedStyle(actionsElement).display;
+
+                if (currentDisplay === "none") {
+                    actionsElement.style.display = "block";
+                } else {
+                    actionsElement.style.display = "none";
+                }
+            });
+        });
+
+
+    </script>
+{% endblock %}

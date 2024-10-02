@@ -1,0 +1,40 @@
+{% comment %} {% extends 'base.html' %} {% endcomment %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+{% endblock%}
+
+{% block content %}
+<nav>
+    <a href='{% url "accounts:initialInterviewer" %}'>
+        <img id="mainLogo" src="{% static 'images/main_logo.png' %}" alt="Hire Hub">
+    </a>
+    {% if user.is_authenticated %}<!--로그인한 상태일 때 출력-->
+    <div id="nav_menu">
+        <div class="nav_left">
+            <a href='{% url "accounts:mainboard" pk=user.pk %}'>mainboard</a>
+            <a href='{% url "applicants:document" %}'>document</a>
+            <div class="toggle_section">
+                <div>
+                    <a href=''>interview</a>
+                    <i class="ri-arrow-up-s-line"></i>
+                    <i class="ri-arrow-down-s-line"></i>
+
+                    <div class="toggle_view">
+                        <a href='{% url "applicants:interview" %}'>면접 관리</a>
+                        <a href='{% url "applicants:schedule" %}'>면접 일정</a>
+                        <a href='{% url "applicants:rankings" %}'>지원자 순위</a>
+                    </div>
+                </div>
+            </div>
+            
+            <a style="margin-left: 52px;" href='{% url "template:template_list" %}'>template</a>
+            <a  id="logout" href='{% url "accounts:logout" %}'>logout</a>
+        </div>
+    </div>
+    {% endif %}
+</nav>
+<script>
+    
+</script>
+{% endblock %}

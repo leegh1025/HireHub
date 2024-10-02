@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta property="og:url" content="https://hirehub.kr">
+    <meta property="og:title" content="HireHub">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://hirehub.kr/static/images/image_logo.png">
+    <meta property="og:description" content="효율적인 인재 영입의 시작">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/variable.css' %}">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+    <link rel="stylesheet" href="{% static 'css/landing_responsive.css' %}">
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="landing_navbar">
+            <a href="/">
+                <img id="mainLogo" src="{% static 'images/main_logo.png' %}" alt="Hire Hub">
+            </a>
+        </nav>
+    </header>
+    <main>
+        <section class="main">
+            <div>
+                <div>
+                    <h2 id="animatedText">HIREHUB</h2>
+                    <h1 id="animatedText">효율적인 <span class="line-break">인재 영입의 시작</span></h1>
+                    <p>탁월한 <span>채용 전략</span>과 <span>지원자 관리</span>를</p>
+                    <p>제공하는 채용 솔루션</p>
+                </div>
+                <div class="button_box">
+                    <a href="https://www.instagram.com/hirehub_official?igsh=bG5yNnprbG0xbmY2" target="_blank">문의하기</a><!-- 임시 url -->
+                    <a href="{% url 'accounts:initialInterviewer' %}">시작하기</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="all_in_one">
+            <div id="title_box">
+                <h2>All In One</h2>
+                <p>지원서 작성부터 최종평가까지</p>
+                <p>채용의 전 과정을 한번에</p>
+            </div>
+            <div class="img_container">
+                <div class="img_list">
+                    <img id="section_img_1" src="{% static 'images/all_in_one_1.png' %}">
+                    <img id="section_img_2" src="{% static 'images/all_in_one_2.png' %}">
+                    <img id="section_img_3" src="{% static 'images/all_in_one_3.png' %}">
+                    <img id="section_img_4" src="{% static 'images/all_in_one_4.png' %}">
+                </div>
+                <img id="arrow" src="{% static 'images/big_arrow.png' %}">
+            </div>
+        </section>
+
+        <section class="assistant">
+            <div id="title_box">
+                <h2>Assistant</h2>
+                <p>오직 면접에만 집중하게 해주는 나만의 헬퍼</p>
+            </div>
+            <div>
+                <div class="assistant_img">
+                    <img class="left" id="page" src="{% static 'images/page_1.png' %}">
+                    <img id="info" src="{% static 'images/assistant_1.png' %}">
+                </div>
+            </div>
+            <div>
+                <div class="assistant_img">
+                    <img id="info" src="{% static 'images/assistant_2.png' %}">
+                    <img class="right" id="page" src="{% static 'images/page_2.png' %}">
+                </div>
+            </div>
+            <div>
+                <div class="assistant_img">
+                    <img class="left" id="page" src="{% static 'images/page_3.png' %}">
+                    <img id="info" src="{% static 'images/assistant_3.png' %}">
+                </div>
+            </div>
+        </section>
+
+        <section class="interview">
+            <div id="title_box">
+                <h2>Interview</h2>
+                <p>지원자의 면접관리를 한 페이지에서 !</p>
+                <img id="interview_img" src="{% static 'images/interview.png' %}">
+            </div>
+        </section>
+
+        <section class="final">
+            <div id="title_box">
+                <p>효율적인 인재 영입의 시작</p>
+                <h1>HIREHUB</h1>
+            </div>
+            <div class="final_btn" id="final_btn">
+                <a href="{% url 'accounts:initialInterviewer' %}">바로 시작하기</a>
+            </div>
+        </section>
+
+        <footer>
+            <div class="footer_title">
+                <h1>HIREHUB</h1>
+            </div>
+            <div class="social_container">
+                <a href=""><i class="ri-kakao-talk-fill"></i>hirehub_kakao</a>
+                <a href=""><i class="ri-instagram-fill"></i>@hirehub_official</a>
+                <a href=""><i class="ri-mail-fill"></i>hirehubkr.gmail.com</a>
+            </div>
+        </footer>
+    </main>
+
+    <script src="{% static 'js/landing.js' %}"></script>
+</body>
+</html>

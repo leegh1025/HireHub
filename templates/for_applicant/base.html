@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta property="og:url" content="https://hirehub.kr">
+    <meta property="og:title" content="HireHub">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://hirehub.kr/static/images/image_logo.png">
+    <meta property="og:description" content="효율적인 인재 영입의 시작">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/variable.css' %}">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/for_applicant.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif !important;
+        }
+    </style>
+    {% block head %} {% endblock %}
+</head>
+<body>
+    <header>
+        <nav class="applicant_navbar">
+            <a href="{% url 'accounts:initialApplicant' %}">
+                <img id="mainLogo" src="{% static 'images/main_logo.png' %}" alt="Hire Hub">
+            </a>
+            {% block header %}
+            
+            {% endblock %}
+        </nav>
+    </header>
+    <main>
+        {% block content %}<!-- 여기 내용-->{% endblock content %}
+    </main>
+</body>
+</html>

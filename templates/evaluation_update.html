@@ -1,0 +1,51 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/variable.css' %}">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif !important;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/evaluate.css' %}">
+</head>
+<main>
+    <section>
+        <div class="container container2">
+            <h2>{{evaluation.template.title}} </h2>
+            <p>{{ evaluation.template.description }}</p>
+            <form action="{% url 'evaluations:update_evaluation' evaluation.pk %}" method="post" id="evaluationForm">
+                {% csrf_token %}
+                <label for="comments">Comments:</label>
+                    <textarea name="comments" id="comments" rows="4">{{ evaluation.comments }}</textarea>
+                <div class="evaluate_content">
+                    
+                    <ol class="questions_list">
+                        {% for question in evaluation.template.questions.all %}
+                            <li class="question">
+                                <label for="score_{{ question.id }}">{{ question.question_title }} : {{question.question_text}}</label>
+                                <span>
+                                    <input type="number" name="score_{{ question.id }}" id="score_{{ question.id }}"
+                                        value="{{ existing_scores|get_item:question.id }}"> /10
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                <button type="submit" class="submitBtn">평가 수정하기</button>
+            </form>
+            {% if evaluation %}
+            <div class="total_score">
+                <h3>총 점수: {{ evaluation.total_score }}</h3>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</main>

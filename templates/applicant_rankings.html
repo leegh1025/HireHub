@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/ranking.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ranking_title">
+    <i class="ri-vip-crown-fill"></i>
+    <h1>| Applicants Ranking</h1>
+</div>
+
+<div class="team_container">
+    {% for interview_team in interview_teams %}
+        <div class="team_score">
+            <div class="team_text">
+                <h2>{{ interview_team.team_name }}조</h2>
+                <p>점수 평균: {{ interview_team.average_score }}</p>
+            </div>
+            <div id="score_bar"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>이름</th>
+                        <th>총점</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <script> var counter = 0 </script>
+                    {% for application in applications %}
+                        {% if application.interview_team.id == interview_team.id %}
+                            <tr>
+                                <td id="{{forloop.counter}}">{{ forloop.counter }}</td>
+                                <script>
+                                    var counter = counter+1
+                                    var s{{forloop.counter}} = counter
+                                    document.getElementById("{{forloop.counter}}").innerHTML = s{{forloop.counter}};
+                                </script>
+                                <td class="applicant_name" style="cursor: pointer;" data-application-id="{{ application.id }}">{{ application.name }}</td>
+                                <td>{{ application.total_score }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+</div>
+
+<script src="{% static 'js/ranking.js' %}"></script>
+
+{% endblock %}

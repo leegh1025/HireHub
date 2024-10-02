@@ -1,0 +1,146 @@
+header {
+    height: 80px;
+    width: 100vw;
+    font-family: var(--eng-font);
+}
+
+nav {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: #ffffff;
+}
+
+#mainLogo {
+    display: block;
+    width: 214px;
+    padding-left: 20px;
+}
+
+.template-link h2 {
+    text-align: start;
+}
+
+#nav_menu {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-left: 50px;
+    margin-bottom: -5px;
+}
+
+#nav_menu > a {
+    margin-right: 52px;
+    margin-bottom: 2px;
+    text-decoration: none;
+    color: #000000;
+    font-size: 2rem;
+    vertical-align: middle;
+    font-weight: 500;
+}
+
+.nav_left {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+}
+
+.toggle_section {
+    display: flex;
+    flex-direction: column;
+}
+
+.toggle_section > div {
+    display: flex;
+}
+
+.toggle_section > div > a {
+    margin-bottom: 2px;
+    text-decoration: none;
+    color: #000000;
+    font-size: 2rem !important;
+    vertical-align: middle;
+    font-weight: 500;
+    margin-right: 0 !important;
+}
+
+.toggle_section > div > i::before {
+    font-size: 15px;
+    font-weight: bold;
+    margin-left: 5px;
+    line-height: 220%;
+    cursor: pointer;
+}
+
+.nav_left > a {
+    margin-right: 52px;
+    margin-bottom: 2px;
+    text-decoration: none;
+    color: #000000;
+    font-size: 2rem;
+    vertical-align: middle;
+    font-weight: 500;
+}
+
+.toggle_view {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    text-align: end;
+    margin-left: 30px;
+    margin-top: 30px;
+}
+
+.toggle_view > a {
+    padding-bottom: 7px;
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: black;
+    font-family: "Pretandard", sans-serif !important;
+}
+
+#logout {
+    position: absolute;
+    margin-right: 45px;
+    right: 0;
+}
+
+
+main {
+	height: calc(100vh - 80px);
+    width: 100%;
+    padding: 40px 50px 40px;
+    background-color: #ffffff;
+}
+
+.toggle_section:hover .toggle_view {
+    display: flex;
+    transition: 0.3s;
+}
+
+.toggle_section:hover .ri-arrow-down-s-line {
+    display: flex;
+    transition: 0.3s;
+}
+
+.toggle_section:hover .ri-arrow-up-s-line {
+    display: none;
+    transition: 0.3s;
+}
+
+.ri-arrow-down-s-line{
+    display: none;
+    position: relative;
+}
+
+/* for applicant */
+.applicant_navbar,
+.landing_navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

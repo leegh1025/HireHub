@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+    Hire Hub
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/template/temp_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="templateCtx">
+    <div class="tempBox">
+        <div class="addTemp">
+            <h2 class="tempName">Application</h2>
+            <a href="{% url 'template:apply_create' %}"><i class="ri-file-add-fill"></i></a>
+        </div>
+        <p></p>
+        <ul>
+            {% for template in template1 %}
+                <li class="templateList"><i class="ri-file-2-fill"></i>
+                    <a href="{% url 'template:template_detail' template.pk %}">{{ template.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="tempBox">
+        <div class="addTemp">
+            <h2 class="tempName">Question</h2>
+            <a href="{% url 'template:interview_create' %}"><i class="ri-file-add-fill"></i></a>
+        </div>
+        <p></p>
+        <ul>
+            {% for template in template3 %}
+                <li class="templateList"><i class="ri-file-2-fill"></i>
+                    <a href="{% url 'template:interview_detail' template.pk %}">{{ template.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="tempBox">
+        <div class="addTemp">
+            <h2 class="tempName">Evaluation</h2>
+            <a href="{% url 'template:evaluate_create' %}"><i class="ri-file-add-fill"></i></a>
+        </div>
+        <p></p>
+        <ul>
+            {% for template in template2 %}
+                <li class="templateList"><i class="ri-file-2-fill"></i>
+                    <a href="{% url 'template:evaluate_detail' template.pk %}">{{ template.title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

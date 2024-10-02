@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/variable.css' %}">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif !important;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/evaluate.css' %}">
+</head>
+{% block content %}
+    <div class="container">
+        <h2>{{template.title}} </h2>
+        <p>{{ template.description }}</p>
+        <form action="{% url 'evaluations:evaluation_create' pk %}" method="post" id="evaluationForm">
+            {% csrf_token %}
+            <label for="comments">Comments:</label>
+                <textarea name="comments" id="comments" rows="4"></textarea>
+            <div class="evaluate_content">
+                
+                <ol class="questions_list">
+                    {% for question in template.questions.all %}
+                        <li class="question">
+                            <label for="score_{{ question.id }}">{{ question.question_title }} : {{question.question_text}}</label>
+                            <p class="score_number"><input type="number" name="score_{{ question.id }}" id="score_{{ question.id }}" min="0" max="10" required> /10</p>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+            <button type="submit" class="submitBtn">평가하기</button>
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/schedule.css' %}">
+{% endblock %}
+{% block content %}
+<div class="title_box">
+    <div class="title">| Interview Schedule</div>
+<div class="scheduleTitle">
+    <form class="schedule_btn" action="{% url 'applicants:auto_schedule' %}" method="POST">
+        {% csrf_token %}
+        <button class="btn" type="submit">자동 스케줄링</button>
+    </form>
+</div>
+</div>
+<div class="page_container">
+    <div class="schedule_container">
+        {% for schedule in schedules %}
+            <div class="grid_container">
+                <p>
+                    <span id="day">{{ schedule.possible_date|date:"l" }}</span>
+                    <span id="date">{{ schedule.possible_date|date:"Y.m.d" }} {{ schedule.get_possible_ampm_display }}</span>
+                </p>
+                <div class="applicants_ctx">
+                    {% for applicant in applicants %}
+                        {% if applicant.interview_date == schedule %}
+                        <div class="applicant_info">
+                            <span class="name">{{ applicant.name }}</span>
+                            <span class="sideText">{{ applicant.interview_time }}</span>
+                            <span class="spanUpdate{{ applicant.id }} sideText" style="margin-right: 5px; color: white;"><input type="button" value="수정" onclick="Update({{ applicant.id }})"></span>
+                            <form class="form_update" action="{% url 'applicants:schedule_update' applicant.id %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" id="date" name="date" value="{{ date }}">
+                                <select class="selectDate{{ applicant.id }}" style="display:none" name="selectDate">
+                                    {% for select_date in applicant.possible_date.all %}
+                                    <option value="{{ select_date.id }}" {% if date == select_date.id %}selected{% endif %}>{{ select_date }}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="hidden" id="time" name="time" value="{{ time }}">
+                                <select class="selectTime{{ applicant.id }}" style="display:none" name="selectTime">
+                                    {% for select_time in applicant.TIME_CHOICES %}
+                                    <option value="{{ select_time.1 }}" {% if time == select_time.1 %}selected{% endif %}>{{ select_time|first }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="spanSubmit{{ applicant.id }} submit_btn" style="display:none" type="submit">수정 완료</button>
+                                <span class="spanUpdateCancel{{ applicant.id }}" style="display:none"><input type="button" value="취소" onclick="UpdateCancel({{ applicant.id }})"></span>
+                            </form>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="reschedule_container">
+        <div class="reschedule_applicant">
+        {% for applicant in applicants %}
+            {% if applicant.interview_date == null %}
+                <div class="reschedule_info">
+                    <p>{{ applicant.name }}</p>
+                    <div class="appliCtx">
+                        {% for possible_date in applicant.possible_date.all %}
+                        <p>
+                            {{ possible_date|date:"Y-m-d" }} {{ applicant.get_possible_ampm_display }}
+                        </p>
+                        {% endfor %}
+                </div>
+                <span class="spanUpdate{{ applicant.id }} sideText" style="margin-right: 5px; color: white;"><input type="button" value="수동 스케줄링" onclick="Update({{ applicant.id }})"></span>
+                <form class="form_update" action="{% url 'applicants:schedule_update' applicant.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" id="date" name="date" value="{{ date }}">
+                    <select class="selectDate{{ applicant.id }}" style="display:none" name="selectDate">
+                        {% for select_date in applicant.possible_date.all %}
+                        <option value="{{ select_date.id }}" {% if date == select_date.id %}selected{% endif %}>{{ select_date }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" id="time" name="time" value="{{ time }}">
+                    <select class="selectTime{{ applicant.id }}" style="display:none" name="selectTime">
+                        {% for select_time in applicant.TIME_CHOICES %}
+                        <option value="{{ select_time.1 }}" {% if time == select_time.1 %}selected{% endif %}>{{ select_time|first }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="spanSubmit{{ applicant.id }} submit_btn" style="display:none" type="submit">수정 완료</button>
+                    <span class="spanUpdateCancel{{ applicant.id }}" style="display:none"><input type="button" value="취소" onclick="UpdateCancel({{ applicant.id }})"></span>
+                </form>
+            </div>  
+            {% endif %}
+        {% endfor %}
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'js/schedule.js' %}"></script>
+{% endblock %}

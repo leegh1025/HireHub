@@ -1,0 +1,69 @@
+{% extends 'for_applicant/base.html' %}
+{% load static %}
+
+{% block head %}
+   <link rel="stylesheet" href="{% static 'css/write_apply.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="apply_container">
+   <h2>지원서 | {{ template.name }}</h2>
+   <p>{{ template.description }}</p>
+   <form action="" method="post" id="applyForm">
+      {% csrf_token %}
+      <div class="apply_content">
+         {{ form }}
+         <ol class="questions_list">
+            {% for question in template.questions.all %}
+               <li class="question">
+                  <label for="question_{{question.id}}">{{question.question_text}}</label>
+                  <textarea name="answer_{{question.id}}" id="answer_{{question.id}}" cols="50" rows="5"></textarea>
+               </li>
+            {% endfor %}
+         </ol>
+      </div>
+   </form>
+   <button type="submit" onclick="submitForm()">지원서 제출하기</button>
+</div>
+<script>
+   function submitForm() {
+      let valid = true;
+      let invalidField = null;
+      let invalidFieldName = "";
+
+      let applicant_infos = ["name", "phone_number", "school", "major"];
+      applicant_infos.forEach(function(applicant_info) {
+         let info = document.querySelector(`input[name='${applicant_info}']`);
+         if (info.value.trim() == "" && valid) {
+            valid = false;
+            invalidField = info;
+            invalidFieldName = info.placeholder;
+         }
+      });
+
+      if (valid) {
+         let questions = document.querySelectorAll("textarea[name^='answer_']");
+         questions.forEach(function(question) {
+            if (question.value.trim() == "" && valid) {
+               valid = false;
+               invalidField = question;
+            }
+         });
+      }
+      
+      if (!valid) {
+         if (invalidFieldName == "") {
+            alert("모든 질문에 답변을 작성해주세요");
+         } else {
+            alert(invalidFieldName + "을(를) 작성해주세요");
+         }
+         invalidField.focus();
+         return false;
+      }
+
+      if (valid) {
+         document.getElementById("applyForm").submit();
+      }
+   }
+</script>
+{% endblock content %}
