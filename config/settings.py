@@ -12,24 +12,26 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
-import environ
+import secrets
+
+SECRET_KEY = secrets.token_urlsafe(50)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env = environ.Env()
-environ.Env.read_env(BASE_DIR / '.env')
+#env = environ.Env()
+#environ.Env.read_env(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY=env('SECRET_KEY')
+#SECRET_KEY=env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['13.125.25.250','hirehub.kr', 'localhost','127.0.0.1']
-
+#ALLOWED_HOSTS = ['13.125.25.250','hirehub.kr', 'localhost','127.0.0.1']
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -82,16 +84,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/eng/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'HOST': env('DB_HOST'),
+#         'NAME': env('DB_NAME'),
+#         'USER': env('DB_USER'),
+#         'PASSWORD': env('DB_PASSWORD'),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': env('DB_HOST'),
-        'NAME': env('DB_NAME'),
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -155,10 +163,10 @@ LOGIN_FIELDS = ['email']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CELERY_BROKER_URL = env('CELERY_BROKER_URL')
-CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
-CELERY_ACCEPT_CONTENT = env.list('CELERY_ACCEPT_CONTENT', default=['json'])
-CELERY_TASK_SERIALIZER = env('CELERY_TASK_SERIALIZER', default='json')
-CELERY_RESULT_SERIALIZER = env('CELERY_RESULT_SERIALIZER', default='json')
-CELERY_TIMEZONE = env('CELERY_TIMEZONE', default='Asia/Seoul')
+# CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+# CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
+# CELERY_ACCEPT_CONTENT = env.list('CELERY_ACCEPT_CONTENT', default=['json'])
+# CELERY_TASK_SERIALIZER = env('CELERY_TASK_SERIALIZER', default='json')
+# CELERY_RESULT_SERIALIZER = env('CELERY_RESULT_SERIALIZER', default='json')
+# CELERY_TIMEZONE = env('CELERY_TIMEZONE', default='Asia/Seoul')
 
