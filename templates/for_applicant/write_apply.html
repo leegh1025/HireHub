@@ -9,7 +9,7 @@
 <div class="apply_container">
    <h2>지원서 | {{ template.name }}</h2>
    <p>{{ template.description }}</p>
-   <form action="" method="post" id="applyForm">
+   <form action="" method="post" id="applyForm", enctype="multipart/form-data">
       {% csrf_token %}
       <div class="apply_content">
          {{ form }}

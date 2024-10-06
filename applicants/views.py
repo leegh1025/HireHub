@@ -439,7 +439,7 @@ def apply(request, pk):
     form = ApplyForm()
 
     if request.method == 'POST':
-        form = ApplyForm(request.POST)
+        form = ApplyForm(request.POST, request.FILES)
         if form.is_valid():
             applyContent = form.save(commit=False)
             applyContent.template = template
@@ -452,7 +452,7 @@ def apply(request, pk):
 
                 uploaded_file = request.FILES.get(f'file_{question.id}')
 
-                if question.allow_file_upload and uploaded_file:
+                if uploaded_file:
                     # 파일이 있는 경우
                     Answer.objects.create(
                         application=applyContent,
@@ -460,14 +460,10 @@ def apply(request, pk):
                         file_upload=uploaded_file  
                     )
                 else:
-                    # 텍스트 답변인 경우
-                    Answer.objects.create(
-                        application=applyContent,
-                        question=question,
-                        answer_text=answer_text
-                    )
+                    #텍스트 답변
+                    answers[question.id] = answer_text
 
-                answers[question.id] = answer_text or uploaded_file
+            
 
             
             transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
