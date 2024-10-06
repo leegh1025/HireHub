@@ -32,6 +32,9 @@
                     <h2>지원서 항목 추가</h2>
                     <div>
                         <input type="text" id="new_question_text" placeholder="항목을 입력하세요">
+                        <label>
+                            <input type="checkbox" id="allow_file_upload"> 파일 업로드 허용
+                        </label>
                         <button type="button" onclick="addQuestion()">추가하기</button>
                     </div>
                     
@@ -65,6 +68,8 @@
 
         function addQuestion() {
             const questionText = document.getElementById('new_question_text').value;
+            const allowFileUpload = document.getElementById('allow_file_upload').checked;
+
             if (questionText) {
                 const questionList = document.getElementById('question-list');
                 const form = document.getElementById('template-form');
@@ -80,11 +85,19 @@
                 questionInput.name = `questions[${questionCounter}]`;
                 questionInput.value = questionText;
 
+                const allowFileInput = document.createElement('input');
+                allowFileInput.type = 'hidden';
+                allowFileInput.id = `allow_file_upload_${questionCounter}`;
+                allowFileInput.name = `allow_file_upload_${questionCounter}`;
+                allowFileInput.value = allowFileUpload ? 'on' : 'off';
+
                 listItem.appendChild(questionLabel);
                 form.appendChild(questionInput);
+                form.appendChild(allowFileInput); 
                 questionList.appendChild(listItem);
                 
                 document.getElementById('new_question_text').value = '';
+                document.getElementById('allow_file_upload').checked = false; 
                 console.log(`Added question: ${questionText}`);
 
                 questionCounter++;

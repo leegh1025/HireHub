@@ -449,7 +449,25 @@ def apply(request, pk):
             answers = {}
             for question in template.questions.all():
                 answer_text = request.POST.get(f'answer_{question.id}')
-                answers[question.id] = answer_text
+
+                uploaded_file = request.FILES.get(f'file_{question.id}')
+
+                if question.allow_file_upload and uploaded_file:
+                    # 파일이 있는 경우
+                    Answer.objects.create(
+                        application=applyContent,
+                        question=question,
+                        file_upload=uploaded_file  
+                    )
+                else:
+                    # 텍스트 답변인 경우
+                    Answer.objects.create(
+                        application=applyContent,
+                        question=question,
+                        answer_text=answer_text
+                    )
+
+                answers[question.id] = answer_text or uploaded_file
 
             
             transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
