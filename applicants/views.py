@@ -10,11 +10,22 @@ from datetime import time
 from .tasks import process_application
 from django.db import transaction
 from django.db.models.functions import Coalesce
+from django.utils import timezone
+
+# pdf 추출 관련
+import io
+import zipfile
+from django.http import HttpResponse, Http404
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+
 
 from .models import Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
 from accounts.models import Interviewer, InterviewTeam
 from template.models import ApplicationTemplate, ApplicationQuestion, InterviewTemplate, InterviewQuestion
 from .forms import ApplicationForm, CommentForm, QuestionForm, AnswerForm, ApplyForm
+
 
 def interview(request):
     if request.user.is_authenticated:
@@ -56,6 +67,92 @@ def search_applicant(request):
     applicants = applicants.filter(~Q(status = 'submitted'))
     results = [{'id': applicant.id, 'name': applicant.name} for applicant in applicants]
     return JsonResponse(results, safe=False)
+
+
+
+def download_pdf_single(request, applicant_id):
+    try:
+        applicant = Application.objects.get(pk=applicant_id)
+    except Application.DoesNotExist:
+        raise Http404(f"{applicant_id} not found")
+
+    pdf_buffer = io.BytesIO()
+    p = canvas.Canvas(pdf_buffer)
+
+    # 한글 폰트 등록 
+    pdfmetrics.registerFont(TTFont('NanumSquareRoundR', 'static/fonts/NanumSquareRoundR.ttf')) 
+    p.setFont('NanumSquareRoundR', 12) 
+
+    p.drawString(100, 750, f"신청자 이름: {str(applicant.name)}")
+    p.drawString(100, 725, f"전화번호: {str(applicant.phone_number)}")
+    p.drawString(100, 700, f"학교: {str(applicant.school)}")
+    p.drawString(100, 675, f"전공: {str(applicant.major)}")
+    submission_date = applicant.submission_date.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')
+    p.drawString(100, 650, f"제출 날짜: {submission_date}")
+
+    # 개별 질문, 답
+
+
+    p.showPage()
+    p.save()
+    pdf_buffer.seek(0)
+
+    response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{applicant.name}_application.pdf"'
+
+    return response
+
+
+def download_pdf(request):
+    applicant_ids = request.GET.getlist('applicants')
+
+    if not applicant_ids:
+        return HttpResponse("선택된 항목이 없습니다.", status=400)
+
+    # 한글 폰트 등록
+    pdfmetrics.registerFont(TTFont('NanumSquareRoundR', 'static/fonts/NanumSquareRoundR.ttf'))
+
+    zip_buffer = io.BytesIO()
+
+    # ZIP 파일 생성
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        for applicant_id in applicant_ids:
+            try:
+                applicant = Application.objects.get(pk=applicant_id)
+            except Application.DoesNotExist:
+                raise Http404(f"Applicant with ID {applicant_id} not found")
+
+            pdf_buffer = io.BytesIO()
+            p = canvas.Canvas(pdf_buffer)
+
+            p.setFont('NanumSquareRoundR', 12)
+            p.drawString(100, 750, f"신청자 이름: {str(applicant.name)}")
+            p.drawString(100, 725, f"전화번호: {str(applicant.phone_number)}")
+            p.drawString(100, 700, f"학교: {str(applicant.school)}")
+            p.drawString(100, 675, f"전공: {str(applicant.major)}")
+            submission_date = applicant.submission_date.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')
+            p.drawString(100, 650, f"제출 날짜: {submission_date}")
+
+            # 개별 질문, 답
+
+
+            p.showPage()
+            p.save()
+
+            pdf_buffer.seek(0)
+            zip_file.writestr(f"{applicant.name}_application.pdf", pdf_buffer.read())
+            pdf_buffer.close()
+
+    zip_buffer.seek(0)
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="documents.zip"'
+
+    return response
+
+
+
+
+
 
 def pass_document(request, applicant_id):
     if request.method == 'POST':
@@ -498,3 +595,5 @@ def apply_result(request):
 
 def apply_timeover(request):
     return render(request, 'for_applicant/timeover.html')
+
+

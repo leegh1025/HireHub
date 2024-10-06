@@ -8,6 +8,7 @@
     <div class="applicant_container">
         <div class="applicants_list">
             <p>지원자</p>
+            <button onclick="downloadDocument()" style="font-size: 20px">문서 다운</button>
             <div class="scroll_section" id="all_section">
                 {% for applicant in applicants %}
                 <div class="each_applicant all" id="applicant_all_{{ applicant.pk }}">
@@ -17,6 +18,7 @@
                         <li class="info">{{applicant.major}}</li>
                     </ul>
                     <button onclick="confirmPassDocument({{ applicant.pk }}, '{{ applicant.name }}')" class="pass_btn">서류 합격</button>
+                    <input  onclick="checkDocument({{ applicant.pk }}, '{{ applicant.name }}', event)" type="checkbox" class="output_ckbox"/>
                 </div>
                 {% endfor %}
             </div>
@@ -34,7 +36,7 @@
                             <li class="info">{{applicant.school}}</li>
                             <li class="info">{{applicant.major}}</li>
                         </ul>
-                        <button onclick="confirmFailDocument({{ applicant.pk }}, '{{ applicant.name }}')" class="fail_btn">서류 탈락</button>
+                        <button onclick="confirmFailDocument('{{ applicant.pk }}, {{ applicant.name }}')" class="fail_btn">서류 탈락</button>
                     </div>
                 {% endif %}
                 {% endfor %}
@@ -43,6 +45,53 @@
     </div>
 </div>
 <script>
+    let selectedDocument = [];
+
+    function checkDocument(applicantId, applicantName, event) {
+        const checkbox = event.target;
+        if (checkbox.checked) {
+            selectedDocument.push(applicantId);
+            } else {
+                selectedDocument = selectedDocument.filter(id => id !== applicantId);
+            }            
+    }
+
+    function downloadDocument() {
+    if (selectedDocument.length === 0) {
+        alert("선택된 지원자가 없습니다.");
+        return;
+    }
+
+    // 선택된 ID들을 쿼리스트링 형식으로 변환
+    const queryString = selectedDocument.map(id => `applicants=${id}`).join('&');
+    const url = `/applicants/generate-documents?${queryString}`;
+
+    // 서버로 GET 요청 보내기
+    fetch(url, {
+        method: 'GET'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.blob(); // 서버로부터 blob(PDF 파일 등)을 받음
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'documents.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+
+
     function confirmPassDocument(applicantId, applicantName) {
         const userConfirmed = confirm(`지원자 ${applicantName}을(를) 서류 합격 처리 하시겠습니까?`);
         

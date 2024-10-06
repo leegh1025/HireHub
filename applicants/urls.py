@@ -10,6 +10,11 @@ urlpatterns = [
     path("document", views.document, name="document"),
     path('search_applicant/', views.search_applicant, name='search_applicant'),
     path("document/profile/<int:pk>", views.profile, name='profile'),
+    # 여러 신청자에 대한 ZIP 파일 다운로드
+    path('generate-documents/', views.download_pdf, name='generate_documents'),
+
+    # 단일 신청자에 대한 PDF 다운로드
+    path('download-pdf/<int:applicant_id>/', views.download_pdf_single, name='download_pdf'),
     path("pass_document/<int:applicant_id>/", views.pass_document, name='pass_document'),
     path("fail_document/<int:applicant_id>/", views.fail_document, name='fail_document'),
     path('apply/<int:pk>/', views.apply, name='apply'),
