@@ -12,13 +12,13 @@
             <div class="scroll_section" id="all_section">
                 {% for applicant in applicants %}
                 <div class="each_applicant all" id="applicant_all_{{ applicant.pk }}">
+                    <input  onclick="checkDocument({{ applicant.pk }}, '{{ applicant.name }}', event)" type="checkbox" class="output_ckbox"/>
                     <ul class="applicant_info" onclick="location.href='{% url 'applicants:profile' applicant.pk %}';" style="cursor:pointer;">
                         <li id="name">{{applicant.name}}</li>
                         <li class="info">{{applicant.school}}</li>
                         <li class="info">{{applicant.major}}</li>
                     </ul>
                     <button onclick="confirmPassDocument({{ applicant.pk }}, '{{ applicant.name }}')" class="pass_btn">서류 합격</button>
-                    <input  onclick="checkDocument({{ applicant.pk }}, '{{ applicant.name }}', event)" type="checkbox" class="output_ckbox"/>
                 </div>
                 {% endfor %}
             </div>

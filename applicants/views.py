@@ -1,7 +1,7 @@
 from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from applicants.models import Application
+from applicants.models import Application, Answer
 from django.core.exceptions import PermissionDenied
 from django.db import models, transaction
 from django.forms import modelformset_factory
@@ -19,6 +19,8 @@ from django.http import HttpResponse, Http404
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
 
 
 from .models import Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
@@ -70,47 +72,130 @@ def search_applicant(request):
 
 
 
+def custom_pagination(text, canvas_obj, x_position, y_position, max_width, line_height, font_name, font_size, bottom_margin):
+    """
+    텍스트를 페이지 너비에 맞게 줄바꿈하고, 페이지가 끝나면 자동으로 페이지를 넘겨가며 텍스트를 그립니다.
+    """
+    # 폰트 설정
+    canvas_obj.setFont(font_name, font_size)
+
+    # 단어 단위로 줄바꿈 처리
+    words = text.split(' ')
+    line = ''
+    
+    # 페이지 크기 가져오기
+    page_width, page_height = letter
+    
+    for word in words:
+        # 현재 라인에 단어를 추가한 후 폭을 계산
+        test_line = f"{line} {word}".strip()
+        width = canvas_obj.stringWidth(test_line, font_name, font_size)
+
+        # 현재 줄이 최대 너비를 넘어가면 줄바꿈
+        if width <= max_width:
+            line = test_line
+        else:
+            # 현재 줄 출력
+            canvas_obj.drawString(x_position, y_position, line)
+            y_position -= line_height
+
+            # 새로운 페이지로 넘길 조건 확인
+            if y_position < bottom_margin:
+                canvas_obj.showPage()  # 새로운 페이지로 넘기기
+                canvas_obj.setFont(font_name, font_size)  # 새 페이지에서 폰트 다시 설정
+                y_position = page_height - inch  # 새로운 페이지에서 Y 시작점
+
+            # 새 줄 시작
+            line = word
+
+    # 남은 줄 출력
+    if line:
+        canvas_obj.drawString(x_position, y_position, line)
+        y_position -= line_height
+
+    return y_position
+
+
+def generate_pdf(applicant):
+    pdf_buffer = io.BytesIO()
+    p = canvas.Canvas(pdf_buffer, pagesize=letter)
+
+    # 한글 폰트 등록
+    pdfmetrics.registerFont(TTFont('Pretendard', 'static/fonts/PretendardVariable.ttf'))
+    font_name = 'Pretendard'
+    font_size = 10
+    p.setFont(font_name, font_size)
+
+    page_width, page_height = letter  # 페이지 크기 가져오기
+    margin = 40  # 여백 설정
+    max_width = page_width - 2 * margin  # 텍스트 최대 폭 설정
+    line_height = 18  # 기본 줄 간격
+    bottom_margin = 50  # 페이지 하단 여백
+
+    # 지원자 기본 정보 작성
+    y_position = 760  # Y 좌표 시작점
+    y_position = custom_pagination(
+        f"지원자 정보| {str(applicant.name)} {str(applicant.school)}({str(applicant.major)})", 
+        p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+    )
+
+    submission_date = applicant.submission_date.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')
+    y_position = custom_pagination(
+        f"전화번호: {str(applicant.phone_number)} | 제출 일자: {submission_date}", 
+        p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+    )
+
+    # 개인정보와 문항 사이에 여백 추가
+    y_position -= 40  # 개인정보와 문항 사이에 40포인트의 여백 추가
+
+    # 질문과 답변 작성
+    for answer in applicant.answers.all():  # related_name='answers'로 연결된 답변 가져옴
+        question_text = f"[문항 {answer.question.id}] {answer.question.question_text}"  # 질문 텍스트
+        answer_text = str(answer.answer_text)  # 답변 텍스트
+
+        # 질문 출력
+        y_position = custom_pagination(
+            question_text, p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+        )
+
+        # 질문과 답변 사이에 공백 추가
+        y_position -= 10  # 질문과 답변 사이에 10포인트의 공백 추가
+        
+        # 답변 출력
+        y_position = custom_pagination(
+            answer_text, p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+        )
+
+        # 질문/답변 간 여백 추가
+        y_position -= 20  # 질문/답변 간 추가 줄바꿈(20포인트 공백)
+
+    p.showPage()
+    p.save()
+    pdf_buffer.seek(0)
+
+    return pdf_buffer.getvalue()
+
+
+# 1명 지원자 PDF 다운로드
 def download_pdf_single(request, applicant_id):
     try:
         applicant = Application.objects.get(pk=applicant_id)
     except Application.DoesNotExist:
         raise Http404(f"{applicant_id} not found")
 
-    pdf_buffer = io.BytesIO()
-    p = canvas.Canvas(pdf_buffer)
-
-    # 한글 폰트 등록 
-    pdfmetrics.registerFont(TTFont('NanumSquareRoundR', 'static/fonts/NanumSquareRoundR.ttf')) 
-    p.setFont('NanumSquareRoundR', 12) 
-
-    p.drawString(100, 750, f"신청자 이름: {str(applicant.name)}")
-    p.drawString(100, 725, f"전화번호: {str(applicant.phone_number)}")
-    p.drawString(100, 700, f"학교: {str(applicant.school)}")
-    p.drawString(100, 675, f"전공: {str(applicant.major)}")
-    submission_date = applicant.submission_date.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')
-    p.drawString(100, 650, f"제출 날짜: {submission_date}")
-
-    # 개별 질문, 답
-
-
-    p.showPage()
-    p.save()
-    pdf_buffer.seek(0)
-
-    response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{applicant.name}_application.pdf"'
+    pdf_data = generate_pdf(applicant)
+    
+    response = HttpResponse(pdf_data, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="지원서_{applicant.name}.pdf"'
 
     return response
 
-
+# 여러 지원자 PDF ZIP 파일 다운로드
 def download_pdf(request):
     applicant_ids = request.GET.getlist('applicants')
 
     if not applicant_ids:
         return HttpResponse("선택된 항목이 없습니다.", status=400)
-
-    # 한글 폰트 등록
-    pdfmetrics.registerFont(TTFont('NanumSquareRoundR', 'static/fonts/NanumSquareRoundR.ttf'))
 
     zip_buffer = io.BytesIO()
 
@@ -122,34 +207,14 @@ def download_pdf(request):
             except Application.DoesNotExist:
                 raise Http404(f"Applicant with ID {applicant_id} not found")
 
-            pdf_buffer = io.BytesIO()
-            p = canvas.Canvas(pdf_buffer)
-
-            p.setFont('NanumSquareRoundR', 12)
-            p.drawString(100, 750, f"신청자 이름: {str(applicant.name)}")
-            p.drawString(100, 725, f"전화번호: {str(applicant.phone_number)}")
-            p.drawString(100, 700, f"학교: {str(applicant.school)}")
-            p.drawString(100, 675, f"전공: {str(applicant.major)}")
-            submission_date = applicant.submission_date.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')
-            p.drawString(100, 650, f"제출 날짜: {submission_date}")
-
-            # 개별 질문, 답
-
-
-            p.showPage()
-            p.save()
-
-            pdf_buffer.seek(0)
-            zip_file.writestr(f"{applicant.name}_application.pdf", pdf_buffer.read())
-            pdf_buffer.close()
+            pdf_data = generate_pdf(applicant)
+            zip_file.writestr(f"지원서_{applicant.name}.pdf", pdf_data)
 
     zip_buffer.seek(0)
     response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename="documents.zip"'
+    response['Content-Disposition'] = 'attachment; filename="지원서.zip"'
 
     return response
-
-
 
 
 
