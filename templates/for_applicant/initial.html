@@ -3,18 +3,23 @@
 
 {% block header %}
     <div class="initial_btns">
-        <a class="link_check" href="{% url 'applicants:apply_check' %}">지원 상태 확인하기</a>
-        {% if time_over %}
-        <a class="link_write link_timeover" href="{% url 'applicants:timeover' %}">지원 마감</a>
+        {% if user.is_authenticated %}
+            {% if user.applicant %}
+                <span>지원자: {{ user.name }}님</span>
+            {% endif %}
         {% else %}
-        <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
+            <a class="link_write" href="{% url 'applicants:signup' %}">회원가입</a>
         {% endif %}
+        <!-- {% if time_over %}
+        <a class="link_write link_timeover" href="{% url 'applicants:timeover' %}">지원 마감</a>
+        {% else %} -->
+        <!-- {% endif %} -->
     </div>
 {% endblock %}
 {% block content %}
     <div class="initial_applicant">
-        <p class="main_comment">효율적인 인재 영입의 시작</p>
-        <p class="main_logo">HIREHUB</p>
+        <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
+        <a class="link_check" href="{% url 'applicants:apply_check' %}">지원 상태 확인하기</a>
         <div class="responsive_initial_btns">
             <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
             <a class="link_check" href="{% url 'applicants:apply_check' %}">지원 상태 확인하기</a>
