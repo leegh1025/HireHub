@@ -6,6 +6,15 @@ from django.db import models, transaction
 from .tasks import process_application
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from datetime import datetime
+
+from django.core.mail import send_mail
+
+# 인증 코드 생성
+import json
+from django.http import JsonResponse
+from django.utils.crypto import get_random_string
+from .models import VerificationCode
 
 from .models import Applicant, Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
 from accounts.models import Interviewer, InterviewTeam
@@ -27,6 +36,96 @@ def initial(request):
 
     context = {'template': template, 'time_over': time_over,}
     return render(request, 'for_applicant/initial.html', context)
+
+# 지원자 회원가입
+def signup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        email = data.get('email')
+        name = data.get('name')
+        phone_number = data.get('phone_number')
+        password = data.get('password')
+        password_confirm = data.get('password_confirm')
+        verification_code = data.get('code')
+
+        if Applicant.objects.filter(phone_number=phone_number).exists():
+            return JsonResponse({'success': False, 'message': '이미 가입된 전화번호입니다.'})
+
+        if password != password_confirm:
+            return JsonResponse({'success': False, 'message': '비밀번호가 일치하지 않습니다.'})
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+
+            if not verification.is_verified:
+                return JsonResponse({'success': False, 'message': '이메일 인증을 완료해야 합니다.'})
+
+            if verification.code == verification_code and not verification.is_expired():
+                applicant = Applicant.objects.create_user(
+                    email=email,
+                    name=name,
+                    phone_number=phone_number,
+                    password=password
+                )
+                return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+            
+            return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '입력한 이메일에 대한 인증번호가 존재하지 않습니다.'})
+    
+    return render(request, 'for_applicant/signup.html')
+    
+
+def send_verification_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+
+        if not email:
+            return JsonResponse({'success': False, 'message': '이메일을 입력해주세요.'})
+        if Applicant.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': '이미 존재하는 이메일입니다.'})
+
+        # 인증번호 생성 및 이메일 발송
+        code = get_random_string(length=6, allowed_chars='0123456789')
+        verification, created = VerificationCode.objects.update_or_create(
+            email=email,
+            defaults={'code': code, 'created_at': timezone.now()}  # 새로운 인증번호와 생성 시간 업데이트
+        )
+
+        send_mail(
+            'Your verification code',
+            f'Your verification code is {code}',
+            'pirogramming.official@gmail.com',
+            [email],
+            fail_silently=False,
+        )
+
+        return JsonResponse({'success': True, 'message': '인증번호가 이메일로 전송되었습니다.'})
+
+def verify_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        input_code = data.get('code')
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+            
+            verification_code = str(verification.code)
+            input_code = str(input_code)
+            if verification_code == input_code and not verification.is_expired():
+                verification.is_verified = True
+                verification.save()
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+        
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '인증번호가 입력되지 않았습니다.'})
+    
 def interview(request):
     if request.user.is_authenticated:
         applicants = Application.objects.all()

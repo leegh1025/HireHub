@@ -13,13 +13,15 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 import secrets
+import environ
 
 SECRET_KEY = secrets.token_urlsafe(50)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-#env = environ.Env()
-#environ.Env.read_env(BASE_DIR / '.env')
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -170,3 +172,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # CELERY_RESULT_SERIALIZER = env('CELERY_RESULT_SERIALIZER', default='json')
 # CELERY_TIMEZONE = env('CELERY_TIMEZONE', default='Asia/Seoul')
 
+
+# 회원가입 이메일 인증
+EMAIL_HOST = 'smtp.gmail.com'                     # 메일 호스트 서버
+EMAIL_PORT = '587'                                # 서버 포트
+EMAIL_HOST_USER = env('GMAIL_MAIL')               # 우리가 사용할 Gmail
+EMAIL_HOST_PASSWORD = env('GMAIL_PWD')            # 우리가 사용할 Gmail의 pwd
+EMAIL_USE_TLS = True                              # TLS 보안 설정
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER              # 응답 메일 관련 설정
+
+SESSION_COOKIE_SECURE = False  # 개발 환경에서만 False로 설정, 실제 배포 환경에서는 True
+SESSION_COOKIE_HTTPONLY = True
