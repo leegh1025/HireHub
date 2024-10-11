@@ -5,6 +5,7 @@ from . import views
 app_name = 'applicants'
 
 urlpatterns = [
+    path("", views.initial, name="initial"),
     path("interview", views.interview, name="interview"),
     path('interview/change_status/<str:status_zone_id>/<str:applicant_id>/', views.change_status, name='change_status'),
     path("document", views.document, name="document"),
