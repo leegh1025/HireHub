@@ -2,13 +2,9 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.urls import reverse
-from .models import Interviewer
 from applicants.models import Application
-from template.models import ApplicationTemplate
 from .forms import SignupForm, LoginForm
 from django.contrib import messages
-from django.utils import timezone
-from datetime import datetime
 
 # Create your views here.
 
