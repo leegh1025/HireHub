@@ -6,10 +6,21 @@ main {
    text-decoration: none;
    font-size: 2rem;
 }
-.link_check {
+.initial_btns span {
+   font-size: 2rem;
+}
+#logout_btn {
+   margin-left: 2rem;
+   margin-right: 3rem;
+   color: white;
+   background-color: var(--main-color);
+   padding: 1.3rem 2rem;
+   border-radius: 1rem;
+}
+.link_login {
    color: black;
 }
-.link_write {
+.link_signup {
    color: white;
    background-color: var(--main-color);
    padding: 1.3rem 2rem;
@@ -33,6 +44,25 @@ main {
    font-size: 6rem;
    font-weight: bold;
    color: var(--main-color);
+}
+.link_write {
+   color: white;
+   background-color: var(--main-color);
+   padding: 1.3rem 4rem;
+   margin-bottom: 1.5rem;
+   border-radius: 1rem;
+   font-weight: 500;
+   font-size: 3rem;
+}
+.link_check {
+   color: black;
+   font-size: 3rem;
+   font-weight: 500;
+   padding: 1.3rem 2rem;
+}
+.link_write:hover, .link_check:hover {
+   transform: translateY(-5px);
+   transition-duration: .5s;
 }
 
 /* apply_check.html */
