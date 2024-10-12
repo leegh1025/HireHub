@@ -10,6 +10,7 @@ from datetime import datetime
 
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import logout as auth_logout
 
 # 인증 코드 생성
 import json
@@ -151,6 +152,11 @@ def login(request):
             return JsonResponse({'success': False, 'message': '이메일 또는 비밀번호가 틀렸습니다.'})
 
     return render(request, 'for_applicant/login.html')
+
+def logout(request):
+    auth_logout(request)
+    return redirect('applicants:initial')
+
 def interview(request):
     if request.user.is_authenticated:
         applicants = Application.objects.all()
