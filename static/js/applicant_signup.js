@@ -1,6 +1,18 @@
-// 인증번호 발송 버튼 클릭 시
-const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+// CSRF 토큰을 쿠키에서 가져오는 함수
+function getCSRFToken() {
+   const name = 'csrftoken=';
+   const decodedCookie = decodeURIComponent(document.cookie);
+   const cookieArray = decodedCookie.split(';');
+   for(let i = 0; i < cookieArray.length; i++) {
+       let cookie = cookieArray[i].trim();
+       if (cookie.indexOf(name) == 0) {
+           return cookie.substring(name.length, cookie.length);
+       }
+   }
+   return "";
+}
 
+// 회원가입 함수
 document.getElementById('signup_btn').addEventListener('click', function(event) {
    event.preventDefault(); // 기본 form 제출 방지
 
@@ -10,6 +22,8 @@ document.getElementById('signup_btn').addEventListener('click', function(event) 
    var password = document.getElementById('password').value;
    var password_confirm = document.getElementById('password_confirm').value;
    var verification_code = document.getElementById('code').value;
+
+   const csrfToken = getCSRFToken();
 
    fetch('/applicants/signup/', {
       method: 'POST',
@@ -43,6 +57,7 @@ document.getElementById('signup_btn').addEventListener('click', function(event) 
 
 document.getElementById('send_code_btn').addEventListener('click', function() {
    var email = document.getElementById('email').value;
+   const csrfToken = getCSRFToken();
    fetch(window.location.origin + '/applicants/send_verification_code/', {
       method: 'POST',
       headers: {
@@ -61,6 +76,7 @@ document.getElementById('send_code_btn').addEventListener('click', function() {
 document.getElementById('verify_code_btn').addEventListener('click', function() {
    var email = document.getElementById('email').value;
    var code = document.getElementById('code').value;
+   const csrfToken = getCSRFToken();
    fetch(window.location.origin + '/applicants/verify_code/', {
       method: 'POST',
       headers: {
