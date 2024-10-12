@@ -154,7 +154,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
+    "django.contrib.auth.backends.ModelBackend",  # Interviewer 인증
+    "applicants.backends.ApplicantBackend",  # Applicant 인증 백엔드
 ]
 
 AUTH_USER_MODEL = 'accounts.Interviewer'

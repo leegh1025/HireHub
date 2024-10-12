@@ -9,6 +9,7 @@ from django.utils import timezone
 from datetime import datetime
 
 from django.core.mail import send_mail
+from django.contrib.auth import authenticate, login as auth_login
 
 # 인증 코드 생성
 import json
@@ -125,7 +126,31 @@ def verify_code(request):
         
         except VerificationCode.DoesNotExist:
             return JsonResponse({'success': False, 'message': '인증번호가 입력되지 않았습니다.'})
-    
+
+def login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return JsonResponse({'success': False, 'message': '이메일과 비밀번호를 입력하세요.'})
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            if user.is_active:
+                auth_login(request, user)
+                if isinstance(user, Applicant):
+                    return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+                else:
+                    return JsonResponse({'success': False, 'message': '잘못된 계정입니다.'})
+            else:
+                return JsonResponse({'success': False, 'message': '계정이 비활성화되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '이메일 또는 비밀번호가 틀렸습니다.'})
+
+    return render(request, 'for_applicant/login.html')
 def interview(request):
     if request.user.is_authenticated:
         applicants = Application.objects.all()
