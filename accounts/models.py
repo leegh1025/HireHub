@@ -22,7 +22,7 @@ class InterviewerManager(BaseUserManager):
 class Interviewer(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=20, null=True)
     email = models.EmailField(max_length=255, unique=True, null=False, blank=False)
-    is_approved = models.BooleanField(default=False) # 승인을 해야 로그이 가능하게 하기 위해서 둠!
+    is_approved = models.BooleanField(default=False) # 승인을 해야 로그인이 가능하게 하기 위해서 둠!
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
