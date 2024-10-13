@@ -5,6 +5,12 @@ from . import views
 app_name = 'applicants'
 
 urlpatterns = [
+    path("", views.initial, name="initial"),
+    path("signup/", views.signup, name="signup"),
+    path("send_verification_code/", views.send_verification_code, name="send_verification_code"),
+    path("verify_code/", views.verify_code, name="verify_code"),
+    path("login/", views.login, name="login"),
+    path("logout/", views.logout, name="logout"),
     path("interview", views.interview, name="interview"),
     path('interview/change_status/<str:status_zone_id>/<str:applicant_id>/', views.change_status, name='change_status'),
     path("document", views.document, name="document"),

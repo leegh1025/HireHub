@@ -2,19 +2,160 @@ from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from applicants.models import Application
-from django.core.exceptions import PermissionDenied
 from django.db import models, transaction
-from django.forms import modelformset_factory
-from django.views.decorators.csrf import csrf_exempt
-from datetime import time
 from .tasks import process_application
-from django.db import transaction
 from django.db.models.functions import Coalesce
+from django.utils import timezone
+from datetime import datetime
 
-from .models import Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
+from django.core.mail import send_mail
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import logout as auth_logout
+
+# 인증 코드 생성
+import json
+from django.http import JsonResponse
+from django.utils.crypto import get_random_string
+from .models import VerificationCode
+
+from .models import Applicant, Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
 from accounts.models import Interviewer, InterviewTeam
-from template.models import ApplicationTemplate, ApplicationQuestion, InterviewTemplate, InterviewQuestion
-from .forms import ApplicationForm, CommentForm, QuestionForm, AnswerForm, ApplyForm
+from template.models import ApplicationTemplate, InterviewTemplate, InterviewQuestion
+from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm
+
+# 지원자 초기 페이지
+def initial(request):
+    template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
+    # 목표 시간을 설정합니다.
+    target_time = timezone.make_aware(datetime(2024, 8, 21, 16, 0, 0), timezone=timezone.get_current_timezone())
+    print(target_time)
+    # 현재 시간 가져오기
+    current_time = timezone.localtime(timezone.now())
+    print(current_time)
+    # 목표 시간을 지났는지 여부를 계산
+    time_over = current_time >= target_time
+    print(time_over)
+
+    context = {'template': template, 'time_over': time_over,}
+    return render(request, 'for_applicant/initial.html', context)
+
+# 지원자 회원가입
+def signup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        email = data.get('email')
+        name = data.get('name')
+        phone_number = data.get('phone_number')
+        password = data.get('password')
+        password_confirm = data.get('password_confirm')
+        verification_code = data.get('code')
+
+        if Applicant.objects.filter(phone_number=phone_number).exists():
+            return JsonResponse({'success': False, 'message': '이미 가입된 전화번호입니다.'})
+
+        if password != password_confirm:
+            return JsonResponse({'success': False, 'message': '비밀번호가 일치하지 않습니다.'})
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+
+            if not verification.is_verified:
+                return JsonResponse({'success': False, 'message': '이메일 인증을 완료해야 합니다.'})
+
+            if verification.code == verification_code and not verification.is_expired():
+                applicant = Applicant.objects.create_user(
+                    email=email,
+                    name=name,
+                    phone_number=phone_number,
+                    password=password
+                )
+                return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+            
+            return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '입력한 이메일에 대한 인증번호가 존재하지 않습니다.'})
+    
+    return render(request, 'for_applicant/signup.html')
+    
+
+def send_verification_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+
+        if not email:
+            return JsonResponse({'success': False, 'message': '이메일을 입력해주세요.'})
+        if Applicant.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': '이미 존재하는 이메일입니다.'})
+
+        # 인증번호 생성 및 이메일 발송
+        code = get_random_string(length=6, allowed_chars='0123456789')
+        verification, created = VerificationCode.objects.update_or_create(
+            email=email,
+            defaults={'code': code, 'created_at': timezone.now()}  # 새로운 인증번호와 생성 시간 업데이트
+        )
+
+        send_mail(
+            'Your verification code',
+            f'Your verification code is {code}',
+            'pirogramming.official@gmail.com',
+            [email],
+            fail_silently=False,
+        )
+
+        return JsonResponse({'success': True, 'message': '인증번호가 이메일로 전송되었습니다.'})
+
+def verify_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        input_code = data.get('code')
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+            
+            verification_code = str(verification.code)
+            input_code = str(input_code)
+            if verification_code == input_code and not verification.is_expired():
+                verification.is_verified = True
+                verification.save()
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+        
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '인증번호가 입력되지 않았습니다.'})
+
+def login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return JsonResponse({'success': False, 'message': '이메일과 비밀번호를 입력하세요.'})
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            if user.is_active:
+                auth_login(request, user)
+                if isinstance(user, Applicant):
+                    return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+                else:
+                    return JsonResponse({'success': False, 'message': '잘못된 계정입니다.'})
+            else:
+                return JsonResponse({'success': False, 'message': '계정이 비활성화되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '이메일 또는 비밀번호가 틀렸습니다.'})
+
+    return render(request, 'for_applicant/login.html')
+
+def logout(request):
+    auth_logout(request)
+    return redirect('applicants:initial')
 
 def interview(request):
     if request.user.is_authenticated:

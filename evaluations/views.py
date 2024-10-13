@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Evaluation, EvaluationScore
-from template.models import EvaluationTemplate, EvaluationQuestion
+from template.models import EvaluationTemplate
 from applicants.models import Application
 from accounts.models import Interviewer
 from django.http import HttpResponseForbidden
