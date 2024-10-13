@@ -38,7 +38,7 @@ from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm
 def initial(request):
     template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
     # 목표 시간을 설정합니다.
-    target_time = timezone.make_aware(datetime(2024, 8, 21, 16, 0, 0), timezone=timezone.get_current_timezone())
+    target_time = timezone.make_aware(datetime(2024, 12, 1, 16, 0, 0), timezone=timezone.get_current_timezone())
     print(target_time)
     # 현재 시간 가져오기
     current_time = timezone.localtime(timezone.now())
@@ -741,7 +741,7 @@ def apply(request, pk):
     form = ApplyForm()
 
     if request.method == 'POST':
-        form = ApplyForm(request.POST)
+        form = ApplyForm(request.POST, request.FILES)
         if form.is_valid():
             applyContent = form.save(commit=False)
             applyContent.template = template
@@ -751,7 +751,21 @@ def apply(request, pk):
             answers = {}
             for question in template.questions.all():
                 answer_text = request.POST.get(f'answer_{question.id}')
-                answers[question.id] = answer_text
+
+                uploaded_file = request.FILES.get(f'file_{question.id}')
+
+                if uploaded_file:
+                    # 파일이 있는 경우
+                    Answer.objects.create(
+                        application=applyContent,
+                        question=question,
+                        file_upload=uploaded_file  
+                    )
+                else:
+                    #텍스트 답변
+                    answers[question.id] = answer_text
+
+            
 
             
             transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))

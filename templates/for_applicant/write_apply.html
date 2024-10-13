@@ -9,7 +9,7 @@
 <div class="apply_container">
    <h2>지원서 | {{ template.name }}</h2>
    <p>{{ template.description }}</p>
-   <form action="" method="post" id="applyForm">
+   <form action="" method="post" id="applyForm", enctype="multipart/form-data">
       {% csrf_token %}
       <div class="apply_content">
          {{ form }}
@@ -17,7 +17,12 @@
             {% for question in template.questions.all %}
                <li class="question">
                   <label for="question_{{question.id}}">{{question.question_text}}</label>
-                  <textarea name="answer_{{question.id}}" id="answer_{{question.id}}" cols="50" rows="5"></textarea>
+                  {% if question.allow_file_upload %}
+                     <!-- 파일 업로드가 허용된 경우 파일 필드 표시 -->
+                     <input type="file" name="file_{{question.id}}">
+                  {% else %}
+                     <textarea name="answer_{{question.id}}"  cols="50" rows="5"></textarea>
+                  {% endif %}
                </li>
             {% endfor %}
          </ol>

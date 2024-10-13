@@ -98,7 +98,8 @@ class Application(models.Model):
 class Answer(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(ApplicationQuestion, on_delete=models.CASCADE) #특정 질문에 대한 답변
-    answer_text = models.TextField()
+    answer_text = models.TextField(blank=True, null=True)
+    file_upload = models.FileField(upload_to="uploads/", blank=True, null=True)
 
 class Comment(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='comments')
