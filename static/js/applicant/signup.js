@@ -54,7 +54,6 @@ document.getElementById('signup_btn').addEventListener('click', function(event) 
    });
 });
 
-
 document.getElementById('send_code_btn').addEventListener('click', function() {
    var email = document.getElementById('email').value;
    const csrfToken = getCSRFToken();
@@ -69,6 +68,8 @@ document.getElementById('send_code_btn').addEventListener('click', function() {
    .then(data => {
       if (data.success) {
          alert('인증코드가 이메일로 전송되었습니다.');
+      } else {
+         alert(data.message);
       }
    });
 });
