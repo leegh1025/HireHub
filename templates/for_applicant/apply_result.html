@@ -9,7 +9,7 @@
          <p>SUCCESS</p>
       </div>
       <p class="result_comment">지원이 완료되었습니다.</p>
-      <a href='{% url "accounts:initialApplicant" %}'>
+      <a href='{% url "applicants:initial" %}'>
          <img src="{% static 'images/home.png' %}" alt="">
          메인 페이지로 돌아가기
       </a>
@@ -19,7 +19,7 @@
          <p>NOT FOUND</p>
       </div>
       <p class="resultno_comment">지원 이력이 존재하지 않습니다.</p>
-      <a href='{% url "accounts:initialApplicant" %}'>
+      <a href='{% url "applicants:initial" %}'>
          <img src="{% static 'images/home.png' %}" alt="">
          메인 페이지로 돌아가기
       </a>

@@ -1,20 +1,173 @@
 from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from applicants.models import Application
-from django.core.exceptions import PermissionDenied
+from applicants.models import Application, Answer
 from django.db import models, transaction
-from django.forms import modelformset_factory
-from django.views.decorators.csrf import csrf_exempt
-from datetime import time
 from .tasks import process_application
-from django.db import transaction
 from django.db.models.functions import Coalesce
+from django.utils import timezone
+from datetime import datetime
 
-from .models import Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
+# pdf 추출 관련
+import io
+import zipfile
+from django.http import HttpResponse, Http404
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+
+
+from django.core.mail import send_mail
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import logout as auth_logout
+
+# 인증 코드 생성
+import json
+from django.http import JsonResponse
+from django.utils.crypto import get_random_string
+from .models import VerificationCode
+
+from .models import Applicant, Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
 from accounts.models import Interviewer, InterviewTeam
-from template.models import ApplicationTemplate, ApplicationQuestion, InterviewTemplate, InterviewQuestion
-from .forms import ApplicationForm, CommentForm, QuestionForm, AnswerForm, ApplyForm
+from template.models import ApplicationTemplate, InterviewTemplate, InterviewQuestion
+from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm
+
+# 지원자 초기 페이지
+def initial(request):
+    template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
+    # 목표 시간을 설정합니다.
+    target_time = timezone.make_aware(datetime(2024, 12, 1, 16, 0, 0), timezone=timezone.get_current_timezone())
+    print(target_time)
+    # 현재 시간 가져오기
+    current_time = timezone.localtime(timezone.now())
+    print(current_time)
+    # 목표 시간을 지났는지 여부를 계산
+    time_over = current_time >= target_time
+    print(time_over)
+
+    context = {'template': template, 'time_over': time_over,}
+    return render(request, 'for_applicant/initial.html', context)
+
+# 지원자 회원가입
+def signup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        email = data.get('email')
+        name = data.get('name')
+        phone_number = data.get('phone_number')
+        password = data.get('password')
+        password_confirm = data.get('password_confirm')
+        verification_code = data.get('code')
+
+        if Applicant.objects.filter(phone_number=phone_number).exists():
+            return JsonResponse({'success': False, 'message': '이미 가입된 전화번호입니다.'})
+
+        if password != password_confirm:
+            return JsonResponse({'success': False, 'message': '비밀번호가 일치하지 않습니다.'})
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+
+            if not verification.is_verified:
+                return JsonResponse({'success': False, 'message': '이메일 인증을 완료해야 합니다.'})
+
+            if verification.code == verification_code and not verification.is_expired():
+                applicant = Applicant.objects.create_user(
+                    email=email,
+                    name=name,
+                    phone_number=phone_number,
+                    password=password
+                )
+                return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+            
+            return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '입력한 이메일에 대한 인증번호가 존재하지 않습니다.'})
+    
+    return render(request, 'for_applicant/signup.html')
+    
+
+def send_verification_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+
+        if not email:
+            return JsonResponse({'success': False, 'message': '이메일을 입력해주세요.'})
+        if Applicant.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': '이미 존재하는 이메일입니다.'})
+
+        # 인증번호 생성 및 이메일 발송
+        code = get_random_string(length=6, allowed_chars='0123456789')
+        verification, created = VerificationCode.objects.update_or_create(
+            email=email,
+            defaults={'code': code, 'created_at': timezone.now()}  # 새로운 인증번호와 생성 시간 업데이트
+        )
+
+        send_mail(
+            'Your verification code',
+            f'Your verification code is {code}',
+            'pirogramming.official@gmail.com',
+            [email],
+            fail_silently=False,
+        )
+
+        return JsonResponse({'success': True, 'message': '인증번호가 이메일로 전송되었습니다.'})
+
+def verify_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        input_code = data.get('code')
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+            
+            verification_code = str(verification.code)
+            input_code = str(input_code)
+            if verification_code == input_code and not verification.is_expired():
+                verification.is_verified = True
+                verification.save()
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+        
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '인증번호가 입력되지 않았습니다.'})
+
+def login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return JsonResponse({'success': False, 'message': '이메일과 비밀번호를 입력하세요.'})
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            if user.is_active:
+                auth_login(request, user)
+                if isinstance(user, Applicant):
+                    return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+                else:
+                    return JsonResponse({'success': False, 'message': '잘못된 계정입니다.'})
+            else:
+                return JsonResponse({'success': False, 'message': '계정이 비활성화되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '이메일 또는 비밀번호가 틀렸습니다.'})
+
+    return render(request, 'for_applicant/login.html')
+
+def logout(request):
+    auth_logout(request)
+    return redirect('applicants:initial')
+
 
 def interview(request):
     if request.user.is_authenticated:
@@ -56,6 +209,155 @@ def search_applicant(request):
     applicants = applicants.filter(~Q(status = 'submitted'))
     results = [{'id': applicant.id, 'name': applicant.name} for applicant in applicants]
     return JsonResponse(results, safe=False)
+
+
+
+def custom_pagination(text, canvas_obj, x_position, y_position, max_width, line_height, font_name, font_size, bottom_margin):
+    """
+    텍스트를 페이지 너비에 맞게 줄바꿈하고, 페이지가 끝나면 자동으로 페이지를 넘겨가며 텍스트를 그립니다.
+    """
+    # 폰트 설정
+    canvas_obj.setFont(font_name, font_size)
+
+    # 단어 단위로 줄바꿈 처리
+    words = text.split(' ')
+    line = ''
+    
+    # 페이지 크기 가져오기
+    page_width, page_height = letter
+    
+    for word in words:
+        # 현재 라인에 단어를 추가한 후 폭을 계산
+        test_line = f"{line} {word}".strip()
+        width = canvas_obj.stringWidth(test_line, font_name, font_size)
+
+        # 현재 줄이 최대 너비를 넘어가면 줄바꿈
+        if width <= max_width:
+            line = test_line
+        else:
+            # 현재 줄 출력
+            canvas_obj.drawString(x_position, y_position, line)
+            y_position -= line_height
+
+            # 새로운 페이지로 넘길 조건 확인
+            if y_position < bottom_margin:
+                canvas_obj.showPage()  # 새로운 페이지로 넘기기
+                canvas_obj.setFont(font_name, font_size)  # 새 페이지에서 폰트 다시 설정
+                y_position = page_height - inch  # 새로운 페이지에서 Y 시작점
+
+            # 새 줄 시작
+            line = word
+
+    # 남은 줄 출력
+    if line:
+        canvas_obj.drawString(x_position, y_position, line)
+        y_position -= line_height
+
+    return y_position
+
+
+def generate_pdf(applicant):
+    pdf_buffer = io.BytesIO()
+    p = canvas.Canvas(pdf_buffer, pagesize=letter)
+
+    # 한글 폰트 등록
+    pdfmetrics.registerFont(TTFont('Pretendard', 'static/fonts/PretendardVariable.ttf'))
+    font_name = 'Pretendard'
+    font_size = 10
+    p.setFont(font_name, font_size)
+
+    page_width, page_height = letter  # 페이지 크기 가져오기
+    margin = 40  # 여백 설정
+    max_width = page_width - 2 * margin  # 텍스트 최대 폭 설정
+    line_height = 18  # 기본 줄 간격
+    bottom_margin = 50  # 페이지 하단 여백
+
+    # 지원자 기본 정보 작성
+    y_position = 760  # Y 좌표 시작점
+    y_position = custom_pagination(
+        f"지원자 정보| {str(applicant.name)} {str(applicant.school)}({str(applicant.major)})", 
+        p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+    )
+
+    submission_date = applicant.submission_date.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')
+    y_position = custom_pagination(
+        f"전화번호: {str(applicant.phone_number)} | 제출 일자: {submission_date}", 
+        p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+    )
+
+    # 개인정보와 문항 사이에 여백 추가
+    y_position -= 40  # 개인정보와 문항 사이에 40포인트의 여백 추가
+
+    # 질문과 답변 작성
+    for answer in applicant.answers.all():  # related_name='answers'로 연결된 답변 가져옴
+        question_text = f"[문항 {answer.question.id}] {answer.question.question_text}"  # 질문 텍스트
+        answer_text = str(answer.answer_text)  # 답변 텍스트
+
+        # 질문 출력
+        y_position = custom_pagination(
+            question_text, p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+        )
+
+        # 질문과 답변 사이에 공백 추가
+        y_position -= 10  # 질문과 답변 사이에 10포인트의 공백 추가
+        
+        # 답변 출력
+        y_position = custom_pagination(
+            answer_text, p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+        )
+
+        # 질문/답변 간 여백 추가
+        y_position -= 20  # 질문/답변 간 추가 줄바꿈(20포인트 공백)
+
+    p.showPage()
+    p.save()
+    pdf_buffer.seek(0)
+
+    return pdf_buffer.getvalue()
+
+
+# 1명 지원자 PDF 다운로드
+def download_pdf_single(request, applicant_id):
+    try:
+        applicant = Application.objects.get(pk=applicant_id)
+    except Application.DoesNotExist:
+        raise Http404(f"{applicant_id} not found")
+
+    pdf_data = generate_pdf(applicant)
+    
+    response = HttpResponse(pdf_data, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="지원서_{applicant.name}.pdf"'
+
+    return response
+
+# 여러 지원자 PDF ZIP 파일 다운로드
+def download_pdf(request):
+    applicant_ids = request.GET.getlist('applicants')
+
+    if not applicant_ids:
+        return HttpResponse("선택된 항목이 없습니다.", status=400)
+
+    zip_buffer = io.BytesIO()
+
+    # ZIP 파일 생성
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        for applicant_id in applicant_ids:
+            try:
+                applicant = Application.objects.get(pk=applicant_id)
+            except Application.DoesNotExist:
+                raise Http404(f"Applicant with ID {applicant_id} not found")
+
+            pdf_data = generate_pdf(applicant)
+            zip_file.writestr(f"지원서_{applicant.name}.pdf", pdf_data)
+
+    zip_buffer.seek(0)
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="지원서.zip"'
+
+    return response
+
+
+
 
 def pass_document(request, applicant_id):
     if request.method == 'POST':
@@ -512,3 +814,5 @@ def apply_result(request):
 
 def apply_timeover(request):
     return render(request, 'for_applicant/timeover.html')
+
+

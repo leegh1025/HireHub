@@ -6,10 +6,21 @@ main {
    text-decoration: none;
    font-size: 2rem;
 }
-.link_check {
+.initial_btns span {
+   font-size: 2rem;
+}
+#logout_btn {
+   margin-left: 2rem;
+   margin-right: 3rem;
+   color: white;
+   background-color: var(--main-color);
+   padding: 1.3rem 2rem;
+   border-radius: 1rem;
+}
+.link_login {
    color: black;
 }
-.link_write {
+.link_signup {
    color: white;
    background-color: var(--main-color);
    padding: 1.3rem 2rem;
@@ -33,6 +44,25 @@ main {
    font-size: 6rem;
    font-weight: bold;
    color: var(--main-color);
+}
+.link_write {
+   color: white;
+   background-color: var(--main-color);
+   padding: 1.3rem 4rem;
+   margin-bottom: 1.5rem;
+   border-radius: 1rem;
+   font-weight: 500;
+   font-size: 3rem;
+}
+.link_check {
+   color: black;
+   font-size: 3rem;
+   font-weight: 500;
+   padding: 1.3rem 2rem;
+}
+.link_write:hover, .link_check:hover {
+   transform: translateY(-5px);
+   transition-duration: .5s;
 }
 
 /* apply_check.html */
@@ -157,4 +187,69 @@ fieldset {
    width: 2.4rem;
    height: 2.4rem;
    margin-right: 0.5rem;
+}
+
+/* signup.html */
+.signup_head {
+   margin-bottom: 50px;
+}
+#signup_form {
+   width: 500px;
+   align-items: normal;
+}
+.signup_input {
+   width: 30rem;
+   height: 5rem;
+   border-radius: 1.5rem;
+   font-size: 1.8rem;
+   border: 1.5px solid var(--main-color);
+   margin-bottom: 0px;
+}
+[id$="box"] {
+   display: flex;
+   align-items: center;
+   margin-bottom: 1rem;
+}
+[id$="box"] label {
+   font-size: 1.5rem;
+   display: inline-block;
+   width: 90px;
+   margin-left: 10px;
+   font-weight: 500;
+}
+[id$="box"] button {
+   font-size: 1rem;
+   display: inline-block;
+   width: 50px;
+   margin-left: 30px;
+   background-color: var(--main-color);
+   color: white;
+   padding: 10px 5px;
+   border-radius: 1rem;
+   font-weight: 500;
+}
+.button_container {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+#signup_btn {
+   background-color: var(--main-color);
+   color: white;
+   width: 35rem;
+   height: 5rem;
+   border-radius: 1.5rem;
+   font-size: 2rem;
+   font-weight: bold;
+   margin-top: 5rem;
+}
+#verification_status {
+   display: flex;
+   justify-content: center;
+}
+#verification_status p {
+   margin: 0px;
+   margin-bottom: 10px;
+   font-size: 1.5rem;
+   font-weight: 500;
 }

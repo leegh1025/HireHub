@@ -1,7 +1,10 @@
 from django.db import models
 from accounts.models import Interviewer, InterviewTeam
 from template.models import ApplicationTemplate, ApplicationQuestion
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 import datetime as dt
+from django.utils import timezone
+from datetime import timedelta
 
 class Possible_date_list(models.Model):
     AMPM_CHOICES = [
@@ -17,6 +20,45 @@ class Possible_date_list(models.Model):
     
     def __str__(self):
         return f'{self.possible_date}, {self.possible_ampm}'
+
+class ApplicantManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("The Email must be set")
+        email = self.normalize_email(email)
+        phone_number = extra_fields.get('phone_number')
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+class Applicant(AbstractBaseUser):
+    name = models.CharField(max_length=20, null=False)
+    phone_number = models.CharField(max_length=15)
+    email = models.EmailField(max_length=255, unique=True, null=False, blank=False)
+    is_active = models.BooleanField(default=True) # 이메일 인증 전에는 비활성화
+    is_staff = models.BooleanField(default=True)
+
+    objects = ApplicantManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name']
+
+    def __str__(self):
+        return self.email
+
+class VerificationCode(models.Model):
+    email = models.EmailField(unique=True)
+    code = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        expiration_time = self.created_at + timedelta(minutes=10)  # 10분 후 만료
+        return timezone.now() > expiration_time
+
+    def __str__(self):
+        return f"{self.email}: {self.code}"
 
 class Application(models.Model):
     STATUS_CHOICES = [
