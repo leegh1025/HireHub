@@ -175,10 +175,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # 회원가입 이메일 인증
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'                     # 메일 호스트 서버
-EMAIL_PORT = '587'                                # 서버 포트
+EMAIL_PORT = 587                                # 서버 포트
 EMAIL_HOST_USER = env('GMAIL_MAIL')               # 우리가 사용할 Gmail
 EMAIL_HOST_PASSWORD = env('GMAIL_PWD')            # 우리가 사용할 Gmail의 pwd
+
 EMAIL_USE_TLS = True                              # TLS 보안 설정
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER              # 응답 메일 관련 설정
 
