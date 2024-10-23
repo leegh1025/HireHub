@@ -25,14 +25,21 @@ from django.contrib.auth import logout as auth_logout
 
 # 인증 코드 생성
 import json
-from django.http import JsonResponse
 from django.utils.crypto import get_random_string
 from .models import VerificationCode
+
+# 비밀번호 재설정
+from django.contrib.auth.views import PasswordResetView
+from django.views import View
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.urls import reverse
 
 from .models import Applicant, Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
 from accounts.models import Interviewer, InterviewTeam
 from template.models import ApplicationTemplate, InterviewTemplate, InterviewQuestion
-from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm
+from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm, CustomPasswordResetForm
 
 # 지원자 초기 페이지
 def initial(request):
@@ -90,12 +97,11 @@ def signup(request):
     
     return render(request, 'for_applicant/signup.html')
     
-
 def send_verification_code(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         email = data.get('email')
-
+        
         if not email:
             return JsonResponse({'success': False, 'message': '이메일을 입력해주세요.'})
         if Applicant.objects.filter(email=email).exists():
@@ -168,7 +174,89 @@ def logout(request):
     auth_logout(request)
     return redirect('applicants:initial')
 
+# 비밀번호 재설정
+class ApplicantPasswordResetView(PasswordResetView):
+    template_name = 'for_applicant/password_reset.html'
+    email_template_name = 'for_applicant/password_reset_email.html'
+    form_class = CustomPasswordResetForm
 
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            email = data.get('email', None)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': '잘못된 요청입니다.'})
+        
+        # 폼에 데이터를 바인딩해서 유효성 검사
+        form = self.form_class(data={'email': email})
+        if form.is_valid():
+            applicant = Applicant.objects.get(email=form.cleaned_data['email'])
+
+            # uid와 token 생성
+            uid = urlsafe_base64_encode(force_bytes(applicant.pk))
+            token = default_token_generator.make_token(applicant)
+
+            # 비밀번호 재설정 URL 생성
+            reset_url = reverse('applicants:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            full_reset_url = f"{request.scheme}://{request.get_host()}{reset_url}"
+
+            send_mail(
+                '비밀번호 재설정 요쳥',
+                f'비밀번호를 재설정하려면 다음 링크를 클릭하세요: {full_reset_url}',
+                'pirogramming.official@gmail.com',
+                [email]
+            )
+
+            return JsonResponse({'success': True, 'message': '비밀번호 재설정 이메일이 발송되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '해당 이메일을 찾을 수 없습니다.'})
+       
+class ApplicantPasswordResetConfirmView(View):
+    template_name = 'for_applicant/password_reset_confirm.html'
+    
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = Applicant.objects.get(pk=uid)
+            if default_token_generator.check_token(user, token):
+                return render(request, self.template_name)
+            else:
+                return render(request, 'for_applicant/password_reset_invalid.html')
+        except (TypeError, ValueError, OverflowError, Applicant.DoesNotExist):
+            return render(request, 'for_applicant/password_reset_invalid.html')
+    
+    def post(self, request, uidb64, token, *args, **kwargs):
+        try:
+            # JSON 데이터 파싱
+            data = json.loads(request.body)
+            new_password1 = data.get('new_password1')
+            new_password2 = data.get('new_password2')
+
+            # 기본 유효성 검사
+            if not new_password1 or not new_password2:
+                return JsonResponse({'success': False, 'message': '모든 필드를 입력해주세요.'})
+
+            if new_password1 != new_password2:
+                return JsonResponse({'success': False, 'message': '비밀번호가 일치하지 않습니다.'})
+
+            # 사용자 확인
+            try:
+                uid = force_str(urlsafe_base64_decode(uidb64))
+                user = Applicant.objects.get(pk=uid)
+            except (TypeError, ValueError, OverflowError, Applicant.DoesNotExist):
+                return JsonResponse({'success': False, 'message': '유효하지 않은 사용자입니다.'})
+
+            # 토큰 확인
+            if default_token_generator.check_token(user, token):
+                user.set_password(new_password1)
+                user.save()
+                return JsonResponse({'success': True, 'message': '비밀번호가 성공적으로 변경되었습니다!', 'redirect_url': '/applicants/'})
+            else:
+                return JsonResponse({'success': False, 'message': '비밀번호 재설정 링크가 만료되었습니다.'})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': '잘못된 요청 형식입니다.'})  
+        
 def interview(request):
     if request.user.is_authenticated:
         applicants = Application.objects.all()

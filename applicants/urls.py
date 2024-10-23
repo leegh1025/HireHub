@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
 
-
 app_name = 'applicants'
 
 urlpatterns = [
@@ -11,6 +10,8 @@ urlpatterns = [
     path("verify_code/", views.verify_code, name="verify_code"),
     path("login/", views.login, name="login"),
     path("logout/", views.logout, name="logout"),
+    path("password_reset/", views.ApplicantPasswordResetView.as_view(), name="password_reset"),
+    path("reset/<uidb64>/<token>/", views.ApplicantPasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("interview", views.interview, name="interview"),
     path('interview/change_status/<str:status_zone_id>/<str:applicant_id>/', views.change_status, name='change_status'),
     path("document", views.document, name="document"),
