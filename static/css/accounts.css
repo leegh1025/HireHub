@@ -30,15 +30,15 @@
    margin-top: 9rem;
 }
 
-/* signup.html, login.html */
+/* signup.html, login.html, password_reset.html */
 main {
    padding: 0;
 }
-.login_container, .signup_container {
+.login_container, .signup_container, .password_reset_container {
    height: 100vh;
    display: flex;
 }
-.login_left_container, .signup_left_container {
+.login_left_container, .signup_left_container, .password_reset_left_container {
    width: 60%;
    height: 100%;
    display: flex;
@@ -46,7 +46,7 @@ main {
    justify-content: center;
    align-items: center;
 }
-.login_right_container, .signup_right_container {
+.login_right_container, .signup_right_container, .password_reset_right_container {
    width: 40%;
    height: 100%;
    background-color: var(--main-color);
@@ -60,7 +60,7 @@ main {
    justify-content: flex-end;
    align-items: flex-start;
 }
-.login_head {
+.login_head, .password_reset_head {
    font-family: var(--eng-font);
    font-size: 4rem;
    font-weight: bold;
@@ -78,12 +78,12 @@ main {
    text-align: center;
 }
 
-.signupform_container form, .loginform_container form {
+.signupform_container form, .loginform_container form, .password_reset_form_container form, #password_rest_confirm_form {
    display: flex;
    flex-direction: column;
    align-items: center;
 }
-.signup_input, .login_input{
+.signup_input, .login_input {
    width: 56rem;
    height: 6rem;
    border-radius: 1.9rem;
@@ -98,7 +98,7 @@ main {
    color: #939191;
    font-size: 1.4rem;
 }
-.signup_btn, .login_btn {
+.signup_btn, .login_btn, #password_reset_btn, #password_reset_confirm_btn {
    background-color: var(--main-color);
    width: 39rem;
    height: 6rem;
@@ -110,7 +110,7 @@ main {
 .signup_btn {
    margin-top: 1.2rem;
 }
-.signup_btn:hover, .login_btn:hover {
+.signup_btn:hover, .login_btn:hover, #password_reset_btn:hover, #password_reset_confirm_btn:hover {
    cursor: pointer;
 }
 .signup_link {
@@ -127,13 +127,13 @@ main {
    margin-right: 1rem;
 }
 
-.login_right_container p, .signup_right_container p {
+.login_right_container p, .signup_right_container p, .password_reset_right_container p {
    color: white;
 }
-.login_comment ,.signup_comment {
+.login_comment ,.signup_comment, .password_reset_comment {
    font-size: 2rem;
 }
-.login_logo, .signup_logo {
+.login_logo, .signup_logo, .password_reset_logo {
    font-family: var(--eng-font);
    font-size: 6rem;
    font-weight: bold;

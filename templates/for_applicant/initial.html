@@ -7,8 +7,8 @@
             <span>{{ user.name }}님</span> <!-- 사용자 객체 출력 -->
             <a id="logout_btn" href="{% url 'applicants:logout' %}">로그아웃</a>
         {% else %}
-            <a href="{% url 'applicants:login' %}">로그인</a>
-            <a href="{% url 'applicants:signup' %}">회원가입</a>
+            <a class="link_login" href="{% url 'applicants:login' %}">로그인</a>
+            <a class="link_signup" href="{% url 'applicants:signup' %}">회원가입</a>
         {% endif %}
         <!-- {% if time_over %}
         <a class="link_write link_timeover" href="{% url 'applicants:timeover' %}">지원 마감</a>
