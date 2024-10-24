@@ -18,12 +18,16 @@
 {% endblock %}
 {% block content %}
     <div class="initial_applicant">
-        <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
-        <a class="link_check" href="{% url 'applicants:apply_check' %}">지원 상태 확인하기</a>
-        <div class="responsive_initial_btns">
+        {% if user.is_authenticated %}
             <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
             <a class="link_check" href="{% url 'applicants:apply_check' %}">지원 상태 확인하기</a>
-        </div>
+            <div class="responsive_initial_btns">
+                <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
+                <a class="link_check" href="{% url 'applicants:apply_check' %}">지원 상태 확인하기</a>
+            </div>
+        {% else %}
+            <a class="link_check" href="{% url 'applicants:signup' %}">피로그래밍 22기 지원하러 바로가기</a>
+        {% endif %}
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
