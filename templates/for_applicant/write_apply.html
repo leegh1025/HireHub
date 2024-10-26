@@ -1,5 +1,6 @@
 {% extends 'for_applicant/base.html' %}
 {% load static %}
+{% load applicant_filters %}
 
 {% block head %}
    <link rel="stylesheet" href="{% static 'css/write_apply.css' %}">
@@ -12,25 +13,51 @@
    <form action="" method="post" id="applyForm", enctype="multipart/form-data">
       {% csrf_token %}
       <div class="apply_content">
-         {{ form }}
+         {{ form.as_p }}
          <ol class="questions_list">
             {% for question in template.questions.all %}
                <li class="question">
                   <label for="question_{{question.id}}">{{question.question_text}}</label>
                   {% if question.allow_file_upload %}
-                     <!-- 파일 업로드가 허용된 경우 파일 필드 표시 -->
                      <input type="file" name="file_{{question.id}}">
                   {% else %}
-                     <textarea name="answer_{{question.id}}"  cols="50" rows="5"></textarea>
+                  <textarea name="answer_{{ question.id }}" cols="50" rows="5">{{ answers|dict_get:question.id }}</textarea>
+                  <p>디버깅용: 질문 ID {{ question.id }}에 대한 답변 - {{ answers|dict_get:"18" }}</p>
                   {% endif %}
                </li>
             {% endfor %}
          </ol>
       </div>
    </form>
+   <button type="button" onclick="saveDraft()">임시 저장</button>
    <button type="submit" onclick="submitForm()">지원서 제출하기</button>
 </div>
 <script>
+   function saveDraft() {
+      const formData = new FormData(document.getElementById("applyForm"));
+
+      // 비동기적으로 서버에 데이터 전송
+      fetch("{% url 'applicants:save_draft' pk=template.id %}", {
+         method: "POST",
+         body: formData,
+         headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+         },
+      })
+      .then(response => response.json())
+      .then(data => {
+         if (data.status === 'draft_saved') {
+            alert("지원서가 임시 저장되었습니다.");
+         } else {
+            alert("임시 저장에 실패했습니다. 다시 시도해주세요.");
+         }
+      })
+      .catch(error => {
+         console.error("Error:", error);
+         alert("임시 저장 중 오류가 발생했습니다.");
+      });
+   }
+   
    function submitForm() {
       let valid = true;
       let invalidField = null;

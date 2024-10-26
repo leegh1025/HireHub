@@ -7,6 +7,7 @@ from .tasks import process_application
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
 
 # pdf 추출 관련
 import io
@@ -738,51 +739,136 @@ def applicant_rankings(req):
 ## 지원 ##
 def apply(request, pk):
     template = ApplicationTemplate.objects.get(id=pk)
-    form = ApplyForm()
+    
+    try:
+        draft_application = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+        # 임시 저장된 지원서가 있으면 `load_draft`로 리디렉션
+        return redirect('applicants:load_draft', pk=pk)
+    except Application.DoesNotExist:
+        # 임시 저장된 지원서가 없으면 새로운 지원서 작성 페이지로 이동
+        form = ApplyForm()
+
+
+        if request.method == 'POST':
+            form = ApplyForm(request.POST, request.FILES)
+            if form.is_valid():
+                applyContent = form.save(commit=False)
+                applyContent.template = template
+                applyContent.is_drafted = False
+                applyContent.save()
+                form.save_m2m()
+
+                answers = {}
+                for question in template.questions.all():
+                    answer_text = request.POST.get(f'answer_{question.id}')
+
+                    uploaded_file = request.FILES.get(f'file_{question.id}')
+
+                    if uploaded_file:
+                        # 파일이 있는 경우
+                        Answer.objects.create(
+                            application=applyContent,
+                            question=question,
+                            file_upload=uploaded_file  
+                        )
+                    else:
+                        #텍스트 답변
+                        answers[question.id] = answer_text
+                
+                transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
+
+                name = form.cleaned_data['name']
+                phone_number = form.cleaned_data['phone_number']
+                request.session['name'] = name
+                request.session['phone_number'] = phone_number
+                request.session['submitted'] = True
+
+                return redirect('applicants:apply_result')
+    
+        context = {
+            'form': form,
+            'template': template,
+        }
+        return render(request, 'for_applicant/write_apply.html', context)
+
+#임시 저장 
+@login_required
+def save_draft(request, pk):
+    template = ApplicationTemplate.objects.get(id=pk)
+
+    try:
+        applyContent = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+    except Application.DoesNotExist:
+        applyContent = None   # 없으면 빈 폼으로 시작
 
     if request.method == 'POST':
-        form = ApplyForm(request.POST, request.FILES)
+        form = ApplyForm(request.POST, request.FILES, instance=applyContent)
         if form.is_valid():
             applyContent = form.save(commit=False)
             applyContent.template = template
+            applyContent.is_drafted = True  # 임시 저장 상태 설정
+            applyContent.applicant = request.user
             applyContent.save()
             form.save_m2m()
 
-            answers = {}
+
+            # 새 답변 저장
             for question in template.questions.all():
                 answer_text = request.POST.get(f'answer_{question.id}')
-
                 uploaded_file = request.FILES.get(f'file_{question.id}')
 
-                if uploaded_file:
-                    # 파일이 있는 경우
-                    Answer.objects.create(
-                        application=applyContent,
-                        question=question,
-                        file_upload=uploaded_file  
-                    )
-                else:
-                    #텍스트 답변
-                    answers[question.id] = answer_text
+                # 기존 답변이 있는지 확인하고 있으면 업데이트, 없으면 새로 저장
+                answer, created = Answer.objects.get_or_create(
+                    application=applyContent,
+                    question=question,
+                    defaults={'answer_text': answer_text, 'file_upload': uploaded_file}
+                )
+                if not created:
+                    # 기존 답변이 있다면 업데이트
+                    answer.answer_text = answer_text
+                    answer.file_upload = uploaded_file
+                    answer.save()
+                
+                print(f"답변 저장됨: 질문 ID={question.id}, 답변 텍스트={answer.answer_text}, 파일={answer.file_upload}")
 
-            
+            answers = {str(answer.question.id): answer.answer_text for answer in applyContent.answers.all()}
+            print(f"생성된 딕셔너리 answers: {answers}")
 
-            
-            transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
+            return JsonResponse({'status': 'draft_saved', 'application_id': applyContent.id})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Form is invalid'})
 
-            name = form.cleaned_data['name']
-            phone_number = form.cleaned_data['phone_number']
-            request.session['name'] = name
-            request.session['phone_number'] = phone_number
-            request.session['submitted'] = True
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
-            return redirect('applicants:apply_result')
-    
-    context = {
-        'form': form,
-        'template': template,
-    }
-    return render(request, 'for_applicant/write_apply.html', context)
+
+@login_required
+def load_draft(request, pk):
+    print("load_draft 뷰가 호출되었습니다")
+    if request.method == 'GET':
+        template = ApplicationTemplate.objects.get(id=pk)
+
+        try:
+            applyContent = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+            form = ApplyForm(instance=applyContent)
+            answers = {str(answer.question.id): answer.answer_text for answer in applyContent.answers.all()}
+            print("answers의 타입:", type(answers))
+            print("생성된 딕셔너리 answers:", answers)  # 디버깅용 출력
+        except Application.DoesNotExist:
+            print("Application 객체를 찾을 수 없습니다.")
+            form = ApplyForm()
+            answers = {}
+
+        context = {
+            'form': form,
+            'template': template,
+            'answers': answers,
+        }
+        return render(request, 'for_applicant/write_apply.html', context)
+
+    # 만약 POST 등의 다른 요청이 오면 허용되지 않은 메서드로 처리
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
 
 def apply_check(request):
     if request.method == 'POST':
