@@ -8,4 +8,4 @@ def dict_get(d, key):
         value = d.get(str(key), 'No Value Found')
         print(f"dict_get: key={key}, value={value}")  # 디버깅용 출력
         return value
-    return 'Not a dictionary'
+    return ''

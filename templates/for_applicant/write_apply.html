@@ -10,7 +10,7 @@
 <div class="apply_container">
    <h2>지원서 | {{ template.name }}</h2>
    <p>{{ template.description }}</p>
-   <form action="" method="post" id="applyForm", enctype="multipart/form-data">
+   <form action="{% url 'applicants:apply' pk=template.pk %}" method="post" id="applyForm", enctype="multipart/form-data">
       {% csrf_token %}
       <div class="apply_content">
          {{ form.as_p }}
@@ -22,7 +22,6 @@
                      <input type="file" name="file_{{question.id}}">
                   {% else %}
                   <textarea name="answer_{{ question.id }}" cols="50" rows="5">{{ answers|dict_get:question.id }}</textarea>
-                  <p>디버깅용: 질문 ID {{ question.id }}에 대한 답변 - {{ answers|dict_get:"18" }}</p>
                   {% endif %}
                </li>
             {% endfor %}
@@ -94,7 +93,9 @@
       }
 
       if (valid) {
-         document.getElementById("applyForm").submit();
+         const form = document.getElementById("applyForm");
+         form.action = "{% url 'applicants:apply' pk=template.pk %}";
+         form.submit();
       }
    }
 </script>

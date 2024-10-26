@@ -739,57 +739,74 @@ def applicant_rankings(req):
 ## 지원 ##
 def apply(request, pk):
     template = ApplicationTemplate.objects.get(id=pk)
-    
-    try:
-        draft_application = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
-        # 임시 저장된 지원서가 있으면 `load_draft`로 리디렉션
-        return redirect('applicants:load_draft', pk=pk)
-    except Application.DoesNotExist:
-        # 임시 저장된 지원서가 없으면 새로운 지원서 작성 페이지로 이동
+
+    # GET 요청일 때 임시 저장된 지원서를 확인하여 `load_draft`로 리디렉션
+    if request.method == 'GET':
+        try:
+            draft_application = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+            return redirect('applicants:load_draft', pk=pk)
+        except Application.DoesNotExist:
+            pass  # 임시 저장된 지원서가 없으면 새로운 작성 페이지로 계속 진행
+
+        # 새로운 작성 페이지를 위한 폼 생성
         form = ApplyForm()
-
-
-        if request.method == 'POST':
-            form = ApplyForm(request.POST, request.FILES)
-            if form.is_valid():
-                applyContent = form.save(commit=False)
-                applyContent.template = template
-                applyContent.is_drafted = False
-                applyContent.save()
-                form.save_m2m()
-
-                answers = {}
-                for question in template.questions.all():
-                    answer_text = request.POST.get(f'answer_{question.id}')
-
-                    uploaded_file = request.FILES.get(f'file_{question.id}')
-
-                    if uploaded_file:
-                        # 파일이 있는 경우
-                        Answer.objects.create(
-                            application=applyContent,
-                            question=question,
-                            file_upload=uploaded_file  
-                        )
-                    else:
-                        #텍스트 답변
-                        answers[question.id] = answer_text
-                
-                transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
-
-                name = form.cleaned_data['name']
-                phone_number = form.cleaned_data['phone_number']
-                request.session['name'] = name
-                request.session['phone_number'] = phone_number
-                request.session['submitted'] = True
-
-                return redirect('applicants:apply_result')
-    
         context = {
             'form': form,
             'template': template,
         }
         return render(request, 'for_applicant/write_apply.html', context)
+
+    # POST 요청일 때 최종 제출을 처리
+    if request.method == 'POST':
+        form = ApplyForm(request.POST, request.FILES)
+        if form.is_valid():
+            applyContent = form.save(commit=False)
+            applyContent.template = template
+            applyContent.is_drafted = False
+            applyContent.applicant = request.user
+            applyContent.save()
+            form.save_m2m()
+
+            answers = {}
+            for question in template.questions.all():
+                answer_text = request.POST.get(f'answer_{question.id}')
+                uploaded_file = request.FILES.get(f'file_{question.id}')
+
+                answer, created = Answer.objects.get_or_create(
+                    application=applyContent,
+                    question=question
+                )
+
+                # 답변을 업데이트
+                if answer_text:
+                    answer.answer_text = answer_text
+                    answers[question.id] = answer_text  # 기존 로직의 answers에 반영
+                if uploaded_file:
+                    answer.file_upload = uploaded_file
+
+                # 최종 제출이므로 임시 저장 상태를 해제
+                answer.is_drafted = False
+                answer.save()
+                
+            transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
+
+            name = form.cleaned_data['name']
+            phone_number = form.cleaned_data['phone_number']
+            request.session['name'] = name
+            request.session['phone_number'] = phone_number
+            request.session['submitted'] = True
+
+            return redirect('applicants:apply_result')
+        else:
+            print("폼 검증 실패:", form.errors)
+
+        # 폼이 유효하지 않은 경우, 폼과 함께 다시 렌더링
+        context = {
+            'form': form,
+            'template': template,
+        }
+        return render(request, 'for_applicant/write_apply.html', context)
+
 
 #임시 저장 
 @login_required
@@ -843,7 +860,6 @@ def save_draft(request, pk):
 
 @login_required
 def load_draft(request, pk):
-    print("load_draft 뷰가 호출되었습니다")
     if request.method == 'GET':
         template = ApplicationTemplate.objects.get(id=pk)
 
@@ -851,8 +867,7 @@ def load_draft(request, pk):
             applyContent = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
             form = ApplyForm(instance=applyContent)
             answers = {str(answer.question.id): answer.answer_text for answer in applyContent.answers.all()}
-            print("answers의 타입:", type(answers))
-            print("생성된 딕셔너리 answers:", answers)  # 디버깅용 출력
+            
         except Application.DoesNotExist:
             print("Application 객체를 찾을 수 없습니다.")
             form = ApplyForm()
