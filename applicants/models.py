@@ -73,6 +73,7 @@ class Application(models.Model):
         TIME_CHOICES.append((dt.time(hour=x), '{:02d}:00'.format(x)))
         TIME_CHOICES.append((dt.time(hour=x, minute=30), '{:02d}:30'.format(x)))
 
+    applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE)
     template = models.ForeignKey(ApplicationTemplate, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)
@@ -88,6 +89,7 @@ class Application(models.Model):
     interview_date = models.ForeignKey(Possible_date_list, on_delete=models.SET_NULL, blank=True, null=True, related_name='interview_date')
     interview_time = models.TimeField(choices=TIME_CHOICES, blank=True, null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='submitted')
+    is_drafted = models.BooleanField(default=True) #True면 임시저장이고, False면 최종 제출된 상태
 
     def __str__(self):
         return f'{self.name}'

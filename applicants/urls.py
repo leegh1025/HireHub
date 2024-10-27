@@ -39,4 +39,6 @@ urlpatterns = [
     path('document/profile/<int:pk>/question/<int:question_id>/delete/', views.delete_question, name='delete_question'),
     path('document/profile/<int:pk>/question/<int:answer_id>/answer_delete/', views.delete_answer, name='delete_answer'),
     path('document/profile/<int:pk>/delete/', views.delete_recording, name='delete_recording'),
+    path('save_draft/<int:pk>/', views.save_draft, name='save_draft'),
+    path('apply/<int:pk>/draft', views.load_draft, name='load_draft'),
 ]
