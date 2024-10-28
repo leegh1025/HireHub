@@ -828,6 +828,11 @@ def applicant_rankings(req):
 def apply(request, pk):
     template = ApplicationTemplate.objects.get(id=pk)
 
+    final_application = Application.objects.filter(template=template, applicant=request.user, is_drafted=False).first()
+    if final_application:
+        # 최종 제출된 지원서가 있으면 지원 완료 페이지로 리디렉션
+        return redirect('applicants:apply_result')
+
     # GET 요청일 때 임시 저장된 지원서를 확인하여 `load_draft`로 리디렉션
     if request.method == 'GET':
         try:
