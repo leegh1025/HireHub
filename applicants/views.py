@@ -996,22 +996,17 @@ def apply_check(request):
     return render(request, 'for_applicant/apply_check.html')
 
 def apply_result(request):
-    name = request.session.get('name')
-    phone_number = request.session.get('phone_number')
-    submitted = request.session.get('submitted')
-    if name and phone_number:
-        if submitted == False:
-            try:
-                application = Application.objects.get(name=name, phone_number=phone_number)
-                submitted = True
-            except Application.DoesNotExist:
-                submitted = False
-        context = {
-            'submitted': submitted,
-        }
-        return render(request, 'for_applicant/apply_result.html', context)
-    else:
-        return redirect('applicants:apply_check')
+    # 현재 로그인된 사용자 정보와 관련된 제출 상태를 DB에서 조회
+    try:
+        application = Application.objects.get(applicant=request.user, is_drafted=False)
+        submitted = True
+    except Application.DoesNotExist:
+        submitted = False
+
+    context = {
+        'submitted': submitted,
+    }
+    return render(request, 'for_applicant/apply_result.html', context) if submitted else redirect('applicants:apply_check')
 
 def apply_timeover(request):
     return render(request, 'for_applicant/timeover.html')
