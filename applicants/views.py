@@ -201,11 +201,18 @@ class ApplicantPasswordResetView(PasswordResetView):
             reset_url = reverse('applicants:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
             full_reset_url = f"{request.scheme}://{request.get_host()}{reset_url}"
 
+            message = """
+                비밀번호를 재설정하려면 아래 링크를 클릭하세요:
+                <a href="{0}">비밀번호 재설정 링크</a>
+            """.format(full_reset_url)
+
             send_mail(
-                '비밀번호 재설정 요쳥',
-                f'비밀번호를 재설정하려면 다음 링크를 클릭하세요: {full_reset_url}',
-                'pirogramming.official@gmail.com',
-                [email]
+                subject='비밀번호 재설정 요청',
+                message='비밀번호 재설정 링크: {0}'.format(full_reset_url),  # 텍스트 버전
+                from_email='pirogramming.official@gmail.com',
+                recipient_list=[email],
+                fail_silently=False,
+                html_message=message  # HTML 버전
             )
 
             return JsonResponse({'success': True, 'message': '비밀번호 재설정 이메일이 발송되었습니다.'})

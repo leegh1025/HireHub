@@ -5,18 +5,21 @@ from django.urls import reverse
 from applicants.models import Application
 from .forms import SignupForm, LoginForm
 from django.contrib import messages
+from .models import Interviewer
 
 # Create your views here.
 
 def landing(request):
    if request.user.is_authenticated: # 만약 사용자가 로그인되어 있다면 바로 메인 페이지로 가도록
-      return redirect(reverse('accounts:mainboard', kwargs={'pk': request.user.pk}))
+      if isinstance(request.user, Interviewer):
+         return redirect(reverse('accounts:mainboard', kwargs={'pk': request.user.pk}))
    return render(request, 'accounts/landing.html')
 
 # 면접관 초기 페이지
 def initialInterviewer(request):
    if request.user.is_authenticated: # 만약 사용자가 로그인되어 있다면 바로 메인 페이지로 가도록
-      return redirect(reverse('accounts:mainboard', kwargs={'pk': request.user.pk}))
+      if isinstance(request.user, Interviewer):
+         return redirect(reverse('accounts:mainboard', kwargs={'pk': request.user.pk}))
    return render(request, 'accounts/initial.html')
 
 def signup(request):
@@ -64,23 +67,24 @@ def logout(request):
 
 def mainboard(request,pk):
    if request.user.is_authenticated:
-      applicants = Application.objects.filter(interviewer=pk)
-      sort_applicants = Application.objects.filter(interviewer=pk)
-      sort = request.GET.get('sort','')
+      if isinstance(request.user, Interviewer):
+         applicants = Application.objects.filter(interviewer=pk)
+         sort_applicants = Application.objects.filter(interviewer=pk)
+         sort = request.GET.get('sort','')
 
-      if sort == 'submitted':
-         sort_applicants = sort_applicants.filter(status='submitted')
-      elif sort == 'scheduled':
-         sort_applicants = sort_applicants.filter(status='interview_scheduled')
-      elif sort == 'in_progress':
-         sort_applicants = sort_applicants.filter(status='interview_in_progress')
-      elif sort == 'completed':
-         sort_applicants = sort_applicants.filter(status='interview_completed')
-      else:
-         sort_applicants = sort_applicants
+         if sort == 'submitted':
+            sort_applicants = sort_applicants.filter(status='submitted')
+         elif sort == 'scheduled':
+            sort_applicants = sort_applicants.filter(status='interview_scheduled')
+         elif sort == 'in_progress':
+            sort_applicants = sort_applicants.filter(status='interview_in_progress')
+         elif sort == 'completed':
+            sort_applicants = sort_applicants.filter(status='interview_completed')
+         else:
+            sort_applicants = sort_applicants
 
-      interview_num = applicants.filter(~Q(status='submitted')).count()
-      ctx = {"applicants":applicants, "sort_applicants":sort_applicants, "pk":pk, "interview_num": interview_num}
-      return render(request, "mainboard.html", ctx)
+         interview_num = applicants.filter(~Q(status='submitted')).count()
+         ctx = {"applicants":applicants, "sort_applicants":sort_applicants, "pk":pk, "interview_num": interview_num}
+         return render(request, "mainboard.html", ctx)
    else:
       return redirect("accounts:login")
