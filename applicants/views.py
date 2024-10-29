@@ -218,7 +218,7 @@ class ApplicantPasswordResetView(PasswordResetView):
             return JsonResponse({'success': True, 'message': '비밀번호 재설정 이메일이 발송되었습니다.'})
         else:
             return JsonResponse({'success': False, 'message': '해당 이메일을 찾을 수 없습니다.'})
-       
+
 class ApplicantPasswordResetConfirmView(View):
     template_name = 'for_applicant/password_reset_confirm.html'
     
