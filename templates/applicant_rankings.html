@@ -7,10 +7,15 @@
 {% endblock %}
 
 {% block content %}
-<div class="ranking_title">
-    <i class="ri-vip-crown-fill"></i>
-    <h1>| Applicants Ranking</h1>
+<div class="rankingGroup">
+    <div class="ranking_title">
+        <i class="ri-vip-crown-fill"></i>
+        <h1>| Applicants Ranking</h1>
+    </div>
+    <button id="downloadExcel">평가표 출력</button>
 </div>
+
+
 
 <div class="team_container">
     {% for interview_team in interview_teams %}
@@ -49,6 +54,13 @@
         </div>
     {% endfor %}
 </div>
+<script>
+        document.getElementById("downloadExcel").addEventListener("click", function() {
+            // 엑셀 다운로드 URL 이동
+            window.location.href = "/applicants/download_default_excel/";
+        });
+    </script>
+
 
 <script src="{% static 'js/ranking.js' %}"></script>
 

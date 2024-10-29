@@ -2,13 +2,15 @@
 {% load static %}
 {% block head %}
 <link rel="stylesheet" href="{% static 'css/document.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
 {% endblock %}
 {% block content %}
 <div class="document_container">
     <div class="applicant_container">
         <div class="applicants_list">
-            <p>지원자</p>
-            <button onclick="downloadDocument()" style="font-size: 20px">문서 다운</button>
+            <p>지원자 <button onclick="downloadDocument()" style="font-size: 20px"><i class="bi bi-download"></i></button></p>
+            
             <div class="scroll_section" id="all_section">
                 {% for applicant in applicants %}
                 <div class="each_applicant all" id="applicant_all_{{ applicant.pk }}">

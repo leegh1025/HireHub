@@ -12,9 +12,12 @@ from django.db import transaction
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-# pdf 추출 관련
+# pdf, excel 추출 관련
 import io
 import zipfile
+import xlwt
+import openpyxl
+from openpyxl.utils import get_column_letter
 from django.http import HttpResponse, Http404
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase.ttfonts import TTFont
@@ -25,9 +28,8 @@ from reportlab.lib.units import inch
 
 from .models import Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
 from accounts.models import Interviewer, InterviewTeam
-from template.models import ApplicationTemplate, ApplicationQuestion, InterviewTemplate, InterviewQuestion
+from template.models import ApplicationTemplate, ApplicationQuestion, InterviewTemplate, InterviewQuestion, EvaluationTemplate
 from .forms import ApplicationForm, CommentForm, QuestionForm, AnswerForm, ApplyForm
-
 
 def interview(request):
     if request.user.is_authenticated:
@@ -76,39 +78,29 @@ def custom_pagination(text, canvas_obj, x_position, y_position, max_width, line_
     """
     텍스트를 페이지 너비에 맞게 줄바꿈하고, 페이지가 끝나면 자동으로 페이지를 넘겨가며 텍스트를 그립니다.
     """
-    # 폰트 설정
-    canvas_obj.setFont(font_name, font_size)
 
-    # 단어 단위로 줄바꿈 처리
+    canvas_obj.setFont(font_name, font_size)
     words = text.split(' ')
     line = ''
-    
-    # 페이지 크기 가져오기
     page_width, page_height = letter
     
     for word in words:
-        # 현재 라인에 단어를 추가한 후 폭을 계산
         test_line = f"{line} {word}".strip()
         width = canvas_obj.stringWidth(test_line, font_name, font_size)
 
-        # 현재 줄이 최대 너비를 넘어가면 줄바꿈
         if width <= max_width:
             line = test_line
         else:
-            # 현재 줄 출력
             canvas_obj.drawString(x_position, y_position, line)
             y_position -= line_height
 
-            # 새로운 페이지로 넘길 조건 확인
             if y_position < bottom_margin:
-                canvas_obj.showPage()  # 새로운 페이지로 넘기기
-                canvas_obj.setFont(font_name, font_size)  # 새 페이지에서 폰트 다시 설정
-                y_position = page_height - inch  # 새로운 페이지에서 Y 시작점
+                canvas_obj.showPage()  
+                canvas_obj.setFont(font_name, font_size)  
+                y_position = page_height - inch  
 
-            # 새 줄 시작
             line = word
 
-    # 남은 줄 출력
     if line:
         canvas_obj.drawString(x_position, y_position, line)
         y_position -= line_height
@@ -126,48 +118,37 @@ def generate_pdf(applicant):
     font_size = 10
     p.setFont(font_name, font_size)
 
-    page_width, page_height = letter  # 페이지 크기 가져오기
-    margin = 40  # 여백 설정
-    max_width = page_width - 2 * margin  # 텍스트 최대 폭 설정
-    line_height = 18  # 기본 줄 간격
-    bottom_margin = 50  # 페이지 하단 여백
+    page_width, page_height = letter  
+    margin = 40  
+    max_width = page_width - 2 * margin  
+    line_height = 18  
+    bottom_margin = 50  
 
     # 지원자 기본 정보 작성
-    y_position = 760  # Y 좌표 시작점
+    y_position = 760  
     y_position = custom_pagination(
         f"지원자 정보| {str(applicant.name)} {str(applicant.school)}({str(applicant.major)})", 
         p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
     )
-
     submission_date = applicant.submission_date.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')
     y_position = custom_pagination(
         f"전화번호: {str(applicant.phone_number)} | 제출 일자: {submission_date}", 
         p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
     )
+    y_position -= 40  
 
-    # 개인정보와 문항 사이에 여백 추가
-    y_position -= 40  # 개인정보와 문항 사이에 40포인트의 여백 추가
-
-    # 질문과 답변 작성
-    for answer in applicant.answers.all():  # related_name='answers'로 연결된 답변 가져옴
-        question_text = f"[문항 {answer.question.id}] {answer.question.question_text}"  # 질문 텍스트
-        answer_text = str(answer.answer_text)  # 답변 텍스트
-
-        # 질문 출력
+    # 질문, 답변 작성
+    for answer in applicant.answers.all():  
+        question_text = f"[문항 {answer.question.id}] {answer.question.question_text}" 
+        answer_text = str(answer.answer_text) 
         y_position = custom_pagination(
             question_text, p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
         )
-
-        # 질문과 답변 사이에 공백 추가
-        y_position -= 10  # 질문과 답변 사이에 10포인트의 공백 추가
-        
-        # 답변 출력
+        y_position -= 10 
         y_position = custom_pagination(
             answer_text, p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
         )
-
-        # 질문/답변 간 여백 추가
-        y_position -= 20  # 질문/답변 간 추가 줄바꿈(20포인트 공백)
+        y_position -= 20  
 
     p.showPage()
     p.save()
@@ -662,3 +643,77 @@ def apply_timeover(request):
     return render(request, 'for_applicant/timeover.html')
 
 
+
+
+
+def download_default_excel(request):
+    default_evaluate = EvaluationTemplate.objects.filter(is_default=True).first()
+    if not default_evaluate:
+        return HttpResponse("기본 템플릿이 설정되지 않았습니다.", status=404)
+
+    applications = Application.objects.filter(evaluation_template=default_evaluate).select_related('interview_team').prefetch_related('interviewer', 'comments', 'evaluations')
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "평가표"
+
+    # 제목, 설명
+    ws.merge_cells('A1:H1')
+    ws['A1'] = f"{default_evaluate.title}"
+    ws.merge_cells('A2:H2')
+    ws['A2'] = f"{default_evaluate.description}"
+
+    # 테이블 헤더 설정
+    headers = ["면접팀", "면접자", "지원자", "학교", "전공"]
+    question_headers = [f"{idx + 1}번" for idx, question in enumerate(default_evaluate.questions.all())]
+    headers.extend(question_headers)
+    headers.append("총 점수")
+    headers.append("코멘트")
+    
+    for col_num, header in enumerate(headers, 1):
+        col_letter = get_column_letter(col_num)
+        ws[f'{col_letter}3'] = header
+
+    row_num = 4  
+    for application in applications:
+        interview_team = application.interview_team
+        applicant_name = application.name
+        school = application.school if application.school else ""
+        major = application.major if application.major else ""
+        
+        # 면접 팀의 모든 멤버 가져오기
+        interviewers = interview_team.members.all() if interview_team else []
+
+        # 지원자 정보를 첫 번째 행에만 기록
+        first_row = True
+        for interviewer in interviewers:
+            # 해당 면접관의 평가가 있을 경우 불러오기
+            evaluation = application.evaluations.filter(interviewer=interviewer).first()
+            ws[f'A{row_num}'] = interview_team.team_name if interview_team and first_row else ""  # 면접팀 
+            ws[f'B{row_num}'] = interviewer.name  # 면접관 
+            ws[f'C{row_num}'] = applicant_name if first_row else ""  # 지원자
+            ws[f'D{row_num}'] = school if first_row else ""  # 학교
+            ws[f'E{row_num}'] = major if first_row else ""  # 전공
+            first_row = False  
+
+            # 질문 개별 점수
+            for idx, question in enumerate(default_evaluate.questions.all(), start=1):
+                col_letter = get_column_letter(5 + idx)
+                score = evaluation.scores.filter(question=question).first().score if evaluation and evaluation.scores.filter(question=question).exists() else 0
+                ws[f'{col_letter}{row_num}'] = score
+
+            # 질문 총 점수
+            total_score_col = get_column_letter(5 + len(question_headers) + 1)
+            ws[f'{total_score_col}{row_num}'] = evaluation.total_score if evaluation else 0
+    
+            # 코멘트
+            comments_col = get_column_letter(5 + len(question_headers) + 2)
+            comment = application.comments.filter(interviewer=interviewer).first()
+            ws[f'{comments_col}{row_num}'] = comment.text if comment else ""
+            row_num += 1  
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename={default_evaluate.title}_평가표.xlsx'
+    
+    wb.save(response)
+    return response

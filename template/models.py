@@ -6,6 +6,7 @@ class ApplicationTemplate(models.Model):
     description = models.TextField()
     created_by = models.ForeignKey(Interviewer, on_delete=models.CASCADE)
     is_default = models.BooleanField(default=False, verbose_name="기본 템플릿으로 설정")
+    
 
     def __str__(self):
         return self.name

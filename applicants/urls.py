@@ -22,6 +22,7 @@ urlpatterns = [
     path("auto_schedule", views.auto_schedule, name='auto_schedule'),
     path("document/profile/<int:pk>/comment/", views.comment, name='comment'),
     path("document/profile/<int:pk>/comment/<int:comment_id>/delete/", views.delete_comment, name='delete_comment'),
+    path('download_default_excel/', views.download_default_excel, name='download_excel'),
     path('rankings/', views.applicant_rankings, name='rankings'),
     path("schedule/update/<int:pk>s", views.schedule_update, name="schedule_update"),
     # path('document/profile/<int:pk>/evaluate', views.evaluate, name='evaluate')
@@ -32,4 +33,5 @@ urlpatterns = [
     path('document/profile/<int:pk>/question/<int:question_id>/delete/', views.delete_question, name='delete_question'),
     path('document/profile/<int:pk>/question/<int:answer_id>/answer_delete/', views.delete_answer, name='delete_answer'),
     path('document/profile/<int:pk>/delete/', views.delete_recording, name='delete_recording'),
+
 ]

@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import Interviewer, InterviewTeam
-from template.models import ApplicationTemplate, ApplicationQuestion
+from template.models import ApplicationTemplate, ApplicationQuestion,EvaluationTemplate
 import datetime as dt
 
 class Possible_date_list(models.Model):
@@ -32,6 +32,7 @@ class Application(models.Model):
         TIME_CHOICES.append((dt.time(hour=x, minute=30), '{:02d}:30'.format(x)))
 
     template = models.ForeignKey(ApplicationTemplate, on_delete=models.CASCADE, null=True, blank=True)
+    evaluation_template = models.ForeignKey(EvaluationTemplate, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)
     school = models.CharField(max_length=100)

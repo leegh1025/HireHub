@@ -92,3 +92,10 @@
 .scroll_section::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera*/
 }
+
+.bi-download {
+    font-size: 20px;
+    font-weight: bolder;
+    color: var(--main-color);
+    margin-left: 360px;
+}
