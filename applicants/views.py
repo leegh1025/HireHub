@@ -123,7 +123,7 @@ def send_verification_code(request):
         send_mail(
             'Your verification code',
             f'Your verification code is {code}',
-            'pirogramming.official@gmail.com',
+            'pirogramming@naver.com',
             [email],
             fail_silently=False,
         )
@@ -214,7 +214,7 @@ class ApplicantPasswordResetView(PasswordResetView):
             send_mail(
                 subject='비밀번호 재설정 요청',
                 message='비밀번호 재설정 링크: {0}'.format(full_reset_url),  # 텍스트 버전
-                from_email='pirogramming.official@gmail.com',
+                from_email='pirogramming@naver.com',
                 recipient_list=[email],
                 fail_silently=False,
                 html_message=message  # HTML 버전
