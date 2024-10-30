@@ -968,37 +968,8 @@ def load_draft(request, pk):
     # 만약 POST 등의 다른 요청이 오면 허용되지 않은 메서드로 처리
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
-
-
-def apply_check(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        phone_number = request.POST.get('phone_number')
-        request.session['name'] = name
-        request.session['phone_number'] = phone_number
-        request.session['submitted'] = False
-        return redirect('applicants:apply_result')
-    return render(request, 'for_applicant/apply_check.html')
-
-def apply_result(request):
-    # 현재 로그인된 사용자 정보와 관련된 제출 상태를 DB에서 조회
-    try:
-        application = Application.objects.get(applicant=request.user, is_drafted=False)
-        submitted = True
-    except Application.DoesNotExist:
-        submitted = False
-
-    context = {
-        'submitted': submitted,
-    }
-    return render(request, 'for_applicant/apply_result.html', context) if submitted else redirect('applicants:apply_check')
-
 def apply_timeover(request):
     return render(request, 'for_applicant/timeover.html')
-
-
-
-
 
 def download_default_excel(request):
     default_evaluate = EvaluationTemplate.objects.filter(is_default=True).first()

@@ -19,7 +19,6 @@ urlpatterns = [
     path("document/profile/<int:pk>", views.profile, name='profile'),
     # 여러 신청자에 대한 ZIP 파일 다운로드
     path('generate-documents/', views.download_pdf, name='generate_documents'),
-
     # 단일 신청자에 대한 PDF 다운로드
     path('download-pdf/<int:applicant_id>/', views.download_pdf_single, name='download_pdf'),
     path("pass_document/<int:applicant_id>/", views.pass_document, name='pass_document'),
@@ -32,8 +31,6 @@ urlpatterns = [
     path('rankings/', views.applicant_rankings, name='rankings'),
     path("schedule/update/<int:pk>s", views.schedule_update, name="schedule_update"),
     # path('document/profile/<int:pk>/evaluate', views.evaluate, name='evaluate')
-    path("applycheck/", views.apply_check, name='apply_check'),
-    path("applyresult/", views.apply_result, name='apply_result'),
     path("timeover/", views.apply_timeover, name='timeover'),
     path("document/profile/<int:pk>/question/", views.question, name='question'),
     path('document/profile/<int:pk>/question/<int:question_id>/delete/', views.delete_question, name='delete_question'),
