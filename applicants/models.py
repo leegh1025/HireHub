@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import Interviewer, InterviewTeam
-from template.models import ApplicationTemplate, ApplicationQuestion
+from template.models import ApplicationTemplate, ApplicationQuestion, EvaluationTemplate
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 import datetime as dt
 from django.utils import timezone
