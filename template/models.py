@@ -8,6 +8,7 @@ class ApplicationTemplate(models.Model):
     is_default = models.BooleanField(default=False, verbose_name="기본 템플릿으로 설정")
     
 
+
     def __str__(self):
         return self.name
 
@@ -15,6 +16,8 @@ class ApplicationTemplate(models.Model):
 class ApplicationQuestion(models.Model):
     template = models.ForeignKey(ApplicationTemplate, on_delete=models.CASCADE, related_name='questions') # related_name쓰면 접근시 easy해서 쓴겨
     question_text = models.TextField()
+    allow_file_upload = models.BooleanField(default = False) 
+    file_upload = models.FileField(upload_to='uploads/', blank=True, null=True) #파일 업로드 필드
 
     def __str__(self):
         return self.question_text

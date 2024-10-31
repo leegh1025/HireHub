@@ -46,13 +46,20 @@ class ApplicationTemplateCreateView(View):
                     template.save()
 
                 questions = [v for k, v in req.POST.items() if k.startswith('questions[')]
-                for question_text in questions:
-                    ApplicationQuestion.objects.create(template=template, question_text=question_text)
+                for i, question_text in enumerate(questions):
+                    allow_file_upload = req.POST.get(f'allow_file_upload_{i}', 'off') == 'on'  
+                    ApplicationQuestion.objects.create(
+                        template=template,
+                        question_text=question_text,
+                        allow_file_upload=allow_file_upload  # 체크박스 값 반영
+                    )
             
                 if formset.is_valid():
                     formset_questions = formset.save(commit=False)
                     for question in formset_questions:
                         question.template = template
+                        if f'file_upload_{question.id}' in req.FILES:  # 파일 업로드가 있을 경우 처리
+                            question.file_upload = req.FILES[f'file_upload_{question.id}']
                         question.save()
 
                     return JsonResponse({'success': True, 'redirect': reverse('template:template_list')})

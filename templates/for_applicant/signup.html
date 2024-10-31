@@ -1,0 +1,56 @@
+{% extends 'accounts_base.html' %}
+{% load static %}
+
+{% block head %}
+   <link rel="stylesheet" href="{% static 'css/for_applicant.css' %}">
+{% endblock head %}
+
+{% block content %}
+   <div class="signup_container">
+      <div class="signup_left_container">
+         <p class="signup_head">SIGN UP</p>
+         <div class="signupform_container">
+            <form method="POST" action="" id="signup_form">
+               {% csrf_token %}
+               <div id="email_box">
+                  <label for="email">이메일</label>
+                  <input type="email" name="email" id="email" class="signup_input" required>
+                  
+                  <button type="button" id="send_code_btn">인증코드 발송</button>
+               </div>
+               <div id="code_box">
+                  <label for="code">인증코드</label>
+                  <input type="text" name="code" id="code" class="signup_input" required>
+   
+                  <button type="button" id="verify_code_btn">인증코드 확인</button>
+               </div>
+               <div id="verification_status"></div>
+               <div id="name_box">
+                  <label for="name">이름</label>
+                  <input type="text" id="applicant_name" name="applicant_name" class="signup_input" required>
+               </div>
+               <div id="num_box">
+                  <label for="phone_number">전화번호</label>
+                  <input type="tel" id="phone_number" name="phone_number" class="signup_input" pattern="[0-9]+" placeholder="숫자만 입력하세요" required>   
+               </div>
+               <div id="pwd_box">
+                  <label for="password">비밀번호</label>
+                  <input type="password" id="password" name="password" class="signup_input" required>   
+               </div>
+               <div id="pwd_check_box">
+                  <label for="password_confirm">비밀번호 확인</label>
+                  <input type="password" id="password_confirm" name="password_confirm" class="signup_input" required>   
+               </div>    
+               <div class="button_container">
+                  <button id="signup_btn" disabled>회원가입 하기</button>
+               </div>           
+            </form>
+         </div>
+      </div>
+      <div class="signup_right_container">
+         <p class="signup_comment">효율적인 인재 영입의 시작</p>
+         <p class="signup_logo">HIREHUB</p>
+      </div>
+   </div>
+   <script src="{% static 'js/applicant/signup.js' %}"></script>
+{% endblock content %}

@@ -18,7 +18,13 @@ class ApplicationTemplateForm(forms.ModelForm):
 class ApplicationQuestionForm(forms.ModelForm):
     class Meta:
         model = ApplicationQuestion
-        fields = ['question_text']
+        fields = ['question_text', "allow_file_upload", "file_upload"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+        if self.instance.allow_file_upload:
+            self.fields['file_upload'] = forms.FileField(required=False)
 
 class InterviewTemplateForm(forms.ModelForm):
     class Meta:

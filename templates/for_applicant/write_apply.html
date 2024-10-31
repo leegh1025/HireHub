@@ -1,5 +1,6 @@
 {% extends 'for_applicant/base.html' %}
 {% load static %}
+{% load applicant_filters %}
 
 {% block head %}
    <link rel="stylesheet" href="{% static 'css/write_apply.css' %}">
@@ -9,23 +10,53 @@
 <div class="apply_container">
    <h2>지원서 | {{ template.name }}</h2>
    <p>{{ template.description }}</p>
-   <form action="" method="post" id="applyForm">
+   <form action="{% url 'applicants:apply' pk=template.pk %}" method="post" id="applyForm", enctype="multipart/form-data">
       {% csrf_token %}
       <div class="apply_content">
-         {{ form }}
+         {{ form.as_p }}
          <ol class="questions_list">
             {% for question in template.questions.all %}
                <li class="question">
                   <label for="question_{{question.id}}">{{question.question_text}}</label>
-                  <textarea name="answer_{{question.id}}" id="answer_{{question.id}}" cols="50" rows="5"></textarea>
+                  {% if question.allow_file_upload %}
+                     <input type="file" name="file_{{question.id}}">
+                  {% else %}
+                  <textarea name="answer_{{ question.id }}" cols="50" rows="5">{{ answers|dict_get:question.id }}</textarea>
+                  {% endif %}
                </li>
             {% endfor %}
          </ol>
       </div>
    </form>
+   <button type="button" onclick="saveDraft()">임시 저장</button>
    <button type="submit" onclick="submitForm()">지원서 제출하기</button>
 </div>
 <script>
+   function saveDraft() {
+      const formData = new FormData(document.getElementById("applyForm"));
+
+      // 비동기적으로 서버에 데이터 전송
+      fetch("{% url 'applicants:save_draft' pk=template.id %}", {
+         method: "POST",
+         body: formData,
+         headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+         },
+      })
+      .then(response => response.json())
+      .then(data => {
+         if (data.status === 'draft_saved') {
+            alert("지원서가 임시 저장되었습니다.");
+         } else {
+            alert("임시 저장에 실패했습니다. 다시 시도해주세요.");
+         }
+      })
+      .catch(error => {
+         console.error("Error:", error);
+         alert("임시 저장 중 오류가 발생했습니다.");
+      });
+   }
+   
    function submitForm() {
       let valid = true;
       let invalidField = null;
@@ -62,7 +93,9 @@
       }
 
       if (valid) {
-         document.getElementById("applyForm").submit();
+         const form = document.getElementById("applyForm");
+         form.action = "{% url 'applicants:apply' pk=template.pk %}";
+         form.submit();
       }
    }
 </script>

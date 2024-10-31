@@ -17,8 +17,7 @@
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" href="{% static 'css/variable.css' %}">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
-    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/for_applicant.css' %}">
+    <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
     <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
     <style>
@@ -29,18 +28,14 @@
     {% block head %} {% endblock %}
 </head>
 <body>
-    <header>
-        <nav class="applicant_navbar">
-            <a href="{% url 'applicants:initial' %}">
-                <img id="mainLogo" src="{% static 'images/main_logo.png' %}" alt="Hire Hub">
-            </a>
-            {% block header %}
-            
-            {% endblock %}
-        </nav>
-    </header>
-    <main>
-        {% block content %}<!-- 여기 내용-->{% endblock content %}
-    </main>
+   {% if messages %}
+      <ul>
+         {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            <p>{{ message }}</p>
+         {% endfor %}
+      </ul>
+   {% endif %}
+   {% block content %}<!-- 여기 내용-->{% endblock content %}
 </body>
 </html>

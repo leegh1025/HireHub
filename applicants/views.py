@@ -2,17 +2,13 @@ from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from applicants.models import Application, Answer
-from django.core.exceptions import PermissionDenied
 from django.db import models, transaction
-from django.forms import modelformset_factory
-from django.views.decorators.csrf import csrf_exempt
-from datetime import time
 from .tasks import process_application
-from django.db import transaction
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from datetime import datetime
+from django.contrib.auth.decorators import login_required
 
-# pdf, excel 추출 관련
 import io
 import zipfile
 import xlwt
@@ -26,10 +22,254 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 
 
-from .models import Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
+from django.core.mail import send_mail
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import logout as auth_logout
+
+# 인증 코드 생성
+import json
+from django.utils.crypto import get_random_string
+from .models import VerificationCode
+
+# 비밀번호 재설정
+from django.contrib.auth.views import PasswordResetView
+from django.views import View
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.urls import reverse
+
+from .models import Applicant, Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
 from accounts.models import Interviewer, InterviewTeam
 from template.models import ApplicationTemplate, ApplicationQuestion, InterviewTemplate, InterviewQuestion, EvaluationTemplate
 from .forms import ApplicationForm, CommentForm, QuestionForm, AnswerForm, ApplyForm
+
+from template.models import ApplicationTemplate, InterviewTemplate, InterviewQuestion
+from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm, CustomPasswordResetForm
+
+# 지원자 초기 페이지
+def initial(request):
+    template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
+    # 목표 시간을 설정합니다.
+    target_time = timezone.make_aware(datetime(2024, 12, 1, 16, 0, 0), timezone=timezone.get_current_timezone())
+    print(target_time)
+    # 현재 시간 가져오기
+    current_time = timezone.localtime(timezone.now())
+    print(current_time)
+    # 목표 시간을 지났는지 여부를 계산
+    time_over = current_time >= target_time
+    print(time_over)
+
+    context = {'template': template, 'time_over': time_over,}
+    return render(request, 'for_applicant/initial.html', context)
+
+# 지원자 회원가입
+def signup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        email = data.get('email')
+        name = data.get('name')
+        phone_number = data.get('phone_number')
+        password = data.get('password')
+        password_confirm = data.get('password_confirm')
+        verification_code = data.get('code')
+
+        if Applicant.objects.filter(phone_number=phone_number).exists():
+            return JsonResponse({'success': False, 'message': '이미 가입된 전화번호입니다.'})
+
+        if password != password_confirm:
+            return JsonResponse({'success': False, 'message': '비밀번호가 일치하지 않습니다.'})
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+
+            if not verification.is_verified:
+                return JsonResponse({'success': False, 'message': '이메일 인증을 완료해야 합니다.'})
+
+            if verification.code == verification_code and not verification.is_expired():
+                applicant = Applicant.objects.create_user(
+                    email=email,
+                    name=name,
+                    phone_number=phone_number,
+                    password=password
+                )
+                return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+            
+            return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '입력한 이메일에 대한 인증번호가 존재하지 않습니다.'})
+    
+    return render(request, 'for_applicant/signup.html')
+    
+def send_verification_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        
+        if not email:
+            return JsonResponse({'success': False, 'message': '이메일을 입력해주세요.'})
+        if Applicant.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': '이미 존재하는 이메일입니다.'})
+
+        # 인증번호 생성 및 이메일 발송
+        code = get_random_string(length=6, allowed_chars='0123456789')
+        verification, created = VerificationCode.objects.update_or_create(
+            email=email,
+            defaults={'code': code, 'created_at': timezone.now()}  # 새로운 인증번호와 생성 시간 업데이트
+        )
+
+        send_mail(
+            'Your verification code',
+            f'Your verification code is {code}',
+            'pirogramming@naver.com',
+            [email],
+            fail_silently=False,
+        )
+
+        return JsonResponse({'success': True, 'message': '인증번호가 이메일로 전송되었습니다.'})
+
+def verify_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        input_code = data.get('code')
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+            
+            verification_code = str(verification.code)
+            input_code = str(input_code)
+            if verification_code == input_code and not verification.is_expired():
+                verification.is_verified = True
+                verification.save()
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+        
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '인증번호가 입력되지 않았습니다.'})
+
+def login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return JsonResponse({'success': False, 'message': '이메일과 비밀번호를 입력하세요.'})
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            if user.is_active:
+                auth_login(request, user)
+                if isinstance(user, Applicant):
+                    return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+                else:
+                    return JsonResponse({'success': False, 'message': '잘못된 계정입니다.'})
+            else:
+                return JsonResponse({'success': False, 'message': '계정이 비활성화되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '이메일 또는 비밀번호가 틀렸습니다.'})
+
+    return render(request, 'for_applicant/login.html')
+
+def logout(request):
+    auth_logout(request)
+    return redirect('applicants:initial')
+
+# 비밀번호 재설정
+class ApplicantPasswordResetView(PasswordResetView):
+    template_name = 'for_applicant/password_reset.html'
+    email_template_name = 'for_applicant/password_reset_email.html'
+    form_class = CustomPasswordResetForm
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            email = data.get('email', None)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': '잘못된 요청입니다.'})
+        
+        # 폼에 데이터를 바인딩해서 유효성 검사
+        form = self.form_class(data={'email': email})
+        if form.is_valid():
+            applicant = Applicant.objects.get(email=form.cleaned_data['email'])
+
+            # uid와 token 생성
+            uid = urlsafe_base64_encode(force_bytes(applicant.pk))
+            token = default_token_generator.make_token(applicant)
+
+            # 비밀번호 재설정 URL 생성
+            reset_url = reverse('applicants:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            full_reset_url = f"{request.scheme}://{request.get_host()}{reset_url}"
+
+            message = """
+                비밀번호를 재설정하려면 아래 링크를 클릭하세요:
+                <a href="{0}">비밀번호 재설정 링크</a>
+            """.format(full_reset_url)
+
+            send_mail(
+                subject='비밀번호 재설정 요청',
+                message='비밀번호 재설정 링크: {0}'.format(full_reset_url),  # 텍스트 버전
+                from_email='pirogramming@naver.com',
+                recipient_list=[email],
+                fail_silently=False,
+                html_message=message  # HTML 버전
+            )
+
+            return JsonResponse({'success': True, 'message': '비밀번호 재설정 이메일이 발송되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '해당 이메일을 찾을 수 없습니다.'})
+
+class ApplicantPasswordResetConfirmView(View):
+    template_name = 'for_applicant/password_reset_confirm.html'
+    
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = Applicant.objects.get(pk=uid)
+            if default_token_generator.check_token(user, token):
+                return render(request, self.template_name)
+            else:
+                return render(request, 'for_applicant/password_reset_invalid.html')
+        except (TypeError, ValueError, OverflowError, Applicant.DoesNotExist):
+            return render(request, 'for_applicant/password_reset_invalid.html')
+    
+    def post(self, request, uidb64, token, *args, **kwargs):
+        try:
+            # JSON 데이터 파싱
+            data = json.loads(request.body)
+            new_password1 = data.get('new_password1')
+            new_password2 = data.get('new_password2')
+
+            # 기본 유효성 검사
+            if not new_password1 or not new_password2:
+                return JsonResponse({'success': False, 'message': '모든 필드를 입력해주세요.'})
+
+            if new_password1 != new_password2:
+                return JsonResponse({'success': False, 'message': '비밀번호가 일치하지 않습니다.'})
+
+            # 사용자 확인
+            try:
+                uid = force_str(urlsafe_base64_decode(uidb64))
+                user = Applicant.objects.get(pk=uid)
+            except (TypeError, ValueError, OverflowError, Applicant.DoesNotExist):
+                return JsonResponse({'success': False, 'message': '유효하지 않은 사용자입니다.'})
+
+            # 토큰 확인
+            if default_token_generator.check_token(user, token):
+                user.set_password(new_password1)
+                user.save()
+                return JsonResponse({'success': True, 'message': '비밀번호가 성공적으로 변경되었습니다!', 'redirect_url': '/applicants/'})
+            else:
+                return JsonResponse({'success': False, 'message': '비밀번호 재설정 링크가 만료되었습니다.'})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': '잘못된 요청 형식입니다.'})  
+        
 
 def interview(request):
     if request.user.is_authenticated:
@@ -579,22 +819,60 @@ def applicant_rankings(req):
 ## 지원 ##
 def apply(request, pk):
     template = ApplicationTemplate.objects.get(id=pk)
-    form = ApplyForm()
 
+    final_application = Application.objects.filter(template=template, applicant=request.user, is_drafted=False).first()
+    if final_application:
+        # 최종 제출된 지원서가 있으면 지원 완료 페이지로 리디렉션
+        return redirect('applicants:apply_result')
+
+    # GET 요청일 때 임시 저장된 지원서를 확인하여 `load_draft`로 리디렉션
+    if request.method == 'GET':
+        try:
+            draft_application = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+            return redirect('applicants:load_draft', pk=pk)
+        except Application.DoesNotExist:
+            pass  # 임시 저장된 지원서가 없으면 새로운 작성 페이지로 계속 진행
+
+        # 새로운 작성 페이지를 위한 폼 생성
+        form = ApplyForm()
+        context = {
+            'form': form,
+            'template': template,
+        }
+        return render(request, 'for_applicant/write_apply.html', context)
+
+    # POST 요청일 때 최종 제출을 처리
     if request.method == 'POST':
-        form = ApplyForm(request.POST)
+        form = ApplyForm(request.POST, request.FILES)
         if form.is_valid():
             applyContent = form.save(commit=False)
             applyContent.template = template
+            applyContent.is_drafted = False
+            applyContent.applicant = request.user
             applyContent.save()
             form.save_m2m()
 
             answers = {}
             for question in template.questions.all():
                 answer_text = request.POST.get(f'answer_{question.id}')
-                answers[question.id] = answer_text
+                uploaded_file = request.FILES.get(f'file_{question.id}')
 
-            
+                answer, created = Answer.objects.get_or_create(
+                    application=applyContent,
+                    question=question
+                )
+
+                # 답변을 업데이트
+                if answer_text:
+                    answer.answer_text = answer_text
+                    answers[question.id] = answer_text  # 기존 로직의 answers에 반영
+                if uploaded_file:
+                    answer.file_upload = uploaded_file
+
+                # 최종 제출이므로 임시 저장 상태를 해제
+                answer.is_drafted = False
+                answer.save()
+                
             transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
 
             name = form.cleaned_data['name']
@@ -604,47 +882,94 @@ def apply(request, pk):
             request.session['submitted'] = True
 
             return redirect('applicants:apply_result')
-    
-    context = {
-        'form': form,
-        'template': template,
-    }
-    return render(request, 'for_applicant/write_apply.html', context)
+        else:
+            print("폼 검증 실패:", form.errors)
 
-def apply_check(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        phone_number = request.POST.get('phone_number')
-        request.session['name'] = name
-        request.session['phone_number'] = phone_number
-        request.session['submitted'] = False
-        return redirect('applicants:apply_result')
-    return render(request, 'for_applicant/apply_check.html')
-
-def apply_result(request):
-    name = request.session.get('name')
-    phone_number = request.session.get('phone_number')
-    submitted = request.session.get('submitted')
-    if name and phone_number:
-        if submitted == False:
-            try:
-                application = Application.objects.get(name=name, phone_number=phone_number)
-                submitted = True
-            except Application.DoesNotExist:
-                submitted = False
+        # 폼이 유효하지 않은 경우, 폼과 함께 다시 렌더링
         context = {
-            'submitted': submitted,
+            'form': form,
+            'template': template,
         }
-        return render(request, 'for_applicant/apply_result.html', context)
-    else:
-        return redirect('applicants:apply_check')
+        return render(request, 'for_applicant/write_apply.html', context)
+
+
+#임시 저장 
+@login_required
+def save_draft(request, pk):
+    template = ApplicationTemplate.objects.get(id=pk)
+
+    try:
+        applyContent = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+    except Application.DoesNotExist:
+        applyContent = None   # 없으면 빈 폼으로 시작
+
+    if request.method == 'POST':
+        form = ApplyForm(request.POST, request.FILES, instance=applyContent)
+        if form.is_valid():
+            applyContent = form.save(commit=False)
+            applyContent.template = template
+            applyContent.is_drafted = True  # 임시 저장 상태 설정
+            applyContent.applicant = request.user
+            applyContent.save()
+            form.save_m2m()
+
+
+            # 새 답변 저장
+            for question in template.questions.all():
+                answer_text = request.POST.get(f'answer_{question.id}')
+                uploaded_file = request.FILES.get(f'file_{question.id}')
+
+                # 기존 답변이 있는지 확인하고 있으면 업데이트, 없으면 새로 저장
+                answer, created = Answer.objects.get_or_create(
+                    application=applyContent,
+                    question=question,
+                    defaults={'answer_text': answer_text, 'file_upload': uploaded_file}
+                )
+                if not created:
+                    # 기존 답변이 있다면 업데이트
+                    answer.answer_text = answer_text
+                    answer.file_upload = uploaded_file
+                    answer.save()
+                
+                print(f"답변 저장됨: 질문 ID={question.id}, 답변 텍스트={answer.answer_text}, 파일={answer.file_upload}")
+
+            answers = {str(answer.question.id): answer.answer_text for answer in applyContent.answers.all()}
+            print(f"생성된 딕셔너리 answers: {answers}")
+
+            return JsonResponse({'status': 'draft_saved', 'application_id': applyContent.id})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Form is invalid'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
+@login_required
+def load_draft(request, pk):
+    if request.method == 'GET':
+        template = ApplicationTemplate.objects.get(id=pk)
+
+        try:
+            applyContent = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+            form = ApplyForm(instance=applyContent)
+            answers = {str(answer.question.id): answer.answer_text for answer in applyContent.answers.all()}
+            
+        except Application.DoesNotExist:
+            print("Application 객체를 찾을 수 없습니다.")
+            form = ApplyForm()
+            answers = {}
+
+        context = {
+            'form': form,
+            'template': template,
+            'answers': answers,
+        }
+        return render(request, 'for_applicant/write_apply.html', context)
+
+    # 만약 POST 등의 다른 요청이 오면 허용되지 않은 메서드로 처리
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 def apply_timeover(request):
     return render(request, 'for_applicant/timeover.html')
-
-
-
-
 
 def download_default_excel(request):
     default_evaluate = EvaluationTemplate.objects.filter(is_default=True).first()

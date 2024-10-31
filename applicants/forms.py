@@ -1,6 +1,16 @@
 from django import forms
 from .models import ApplicationTemplate, ApplicationQuestion, Comment, individualQuestion, individualAnswer
 from .models import ApplicationTemplate, Comment, Application, Possible_date_list
+from .models import Applicant
+from django.contrib.auth.forms import PasswordResetForm
+
+# '이메일 유효성 검사' 추가된 PasswordResetForm
+class CustomPasswordResetForm(PasswordResetForm):
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if not Applicant.objects.filter(email=email).exists():
+            raise forms.ValidationError("해당 이메일은 가입되어 있지 않습니다.")
+        return email
 
 class ApplicationForm(forms.ModelForm):
     name = forms.CharField(label='Name', max_length=100)
