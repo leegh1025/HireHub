@@ -178,7 +178,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.naver.com'                     # 메일 호스트 서버
 EMAIL_PORT = 587                                # 서버 포트
-EMAIL_HOST_USER = env('EMAIL_HOST')               # 우리가 사용할 mail
+EMAIL_HOST_USER = env('EMAIL_MAIL')               # 우리가 사용할 mail
 EMAIL_HOST_PASSWORD = env('EMAIL_PWD')            # 우리가 사용할 mail의 pwd
 
 EMAIL_USE_TLS = True                              # TLS 보안 설정
