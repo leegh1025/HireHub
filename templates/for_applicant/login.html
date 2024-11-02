@@ -1,0 +1,38 @@
+{% extends 'accounts_base.html' %}
+{% load static %}
+
+{% block head %}
+   <link rel="stylesheet" href="{% static 'css/for_applicant.css' %}">
+{% endblock head %}
+
+{% block content %}
+   <div class="login_container">
+      <div class="login_left_container">
+         <p class="login_head">LOG IN</p>
+         <div class="loginform_container">
+            <form method="POST" action="" id="login_form">
+               {% csrf_token %}
+               <input type="email" name="email" id="email" placeholder="이메일" required>
+
+               <input type="password" name="password" id="password" placeholder="비밀번호" required>
+               <button type="submit" id="login_btn">로그인 하기</button>
+            </form>
+         </div>
+         <div class="link_container">
+            <a class="signup_link" href="{% url 'applicants:signup' %}">
+               <img src="{% static 'images/rocket.png' %}">
+               <span>빠른 회원가입하기</span>
+            </a>
+            <span class="divider">|</span>
+            <a class="findpwd_link" href="{% url 'applicants:password_reset' %}">
+               <span>비밀번호 찾기</span>
+            </a>
+         </div>
+      </div>
+      <div class="login_right_container">
+         <p class="login_comment">효율적인 인재 영입의 시작</p>
+         <p class="login_logo">PIROGRAMMING</p>
+      </div>
+   </div>
+   <script src="{% static 'js/applicant/login.js' %}"></script>
+{% endblock content %}

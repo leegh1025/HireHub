@@ -2,41 +2,25 @@ from django.shortcuts import render, redirect
 from django.db.models import Q
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.urls import reverse
-from .models import Interviewer
 from applicants.models import Application
-from template.models import ApplicationTemplate
 from .forms import SignupForm, LoginForm
 from django.contrib import messages
-from django.utils import timezone
-from datetime import datetime
+from .models import Interviewer
 
 # Create your views here.
 
 def landing(request):
    if request.user.is_authenticated: # 만약 사용자가 로그인되어 있다면 바로 메인 페이지로 가도록
-      return redirect(reverse('accounts:mainboard', kwargs={'pk': request.user.pk}))
+      if isinstance(request.user, Interviewer):
+         return redirect(reverse('accounts:mainboard', kwargs={'pk': request.user.pk}))
    return render(request, 'accounts/landing.html')
 
 # 면접관 초기 페이지
 def initialInterviewer(request):
    if request.user.is_authenticated: # 만약 사용자가 로그인되어 있다면 바로 메인 페이지로 가도록
-      return redirect(reverse('accounts:mainboard', kwargs={'pk': request.user.pk}))
+      if isinstance(request.user, Interviewer):
+         return redirect(reverse('accounts:mainboard', kwargs={'pk': request.user.pk}))
    return render(request, 'accounts/initial.html')
-
-def initialApplicant(request):
-   template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
-   # 목표 시간을 설정합니다.
-   target_time = timezone.make_aware(datetime(2024, 8, 21, 16, 0, 0), timezone=timezone.get_current_timezone())
-   print(target_time)
-   # 현재 시간 가져오기
-   current_time = timezone.localtime(timezone.now())
-   print(current_time)
-   # 목표 시간을 지났는지 여부를 계산
-   time_over = current_time >= target_time
-   print(time_over)
-
-   context = {'template': template, 'time_over': time_over,}
-   return render(request, 'for_applicant/initial.html', context)
 
 def signup(request):
    if request.method == 'GET':
@@ -83,23 +67,24 @@ def logout(request):
 
 def mainboard(request,pk):
    if request.user.is_authenticated:
-      applicants = Application.objects.filter(interviewer=pk)
-      sort_applicants = Application.objects.filter(interviewer=pk)
-      sort = request.GET.get('sort','')
+      if isinstance(request.user, Interviewer):
+         applicants = Application.objects.filter(interviewer=pk)
+         sort_applicants = Application.objects.filter(interviewer=pk)
+         sort = request.GET.get('sort','')
 
-      if sort == 'submitted':
-         sort_applicants = sort_applicants.filter(status='submitted')
-      elif sort == 'scheduled':
-         sort_applicants = sort_applicants.filter(status='interview_scheduled')
-      elif sort == 'in_progress':
-         sort_applicants = sort_applicants.filter(status='interview_in_progress')
-      elif sort == 'completed':
-         sort_applicants = sort_applicants.filter(status='interview_completed')
-      else:
-         sort_applicants = sort_applicants
+         if sort == 'submitted':
+            sort_applicants = sort_applicants.filter(status='submitted')
+         elif sort == 'scheduled':
+            sort_applicants = sort_applicants.filter(status='interview_scheduled')
+         elif sort == 'in_progress':
+            sort_applicants = sort_applicants.filter(status='interview_in_progress')
+         elif sort == 'completed':
+            sort_applicants = sort_applicants.filter(status='interview_completed')
+         else:
+            sort_applicants = sort_applicants
 
-      interview_num = applicants.filter(~Q(status='submitted')).count()
-      ctx = {"applicants":applicants, "sort_applicants":sort_applicants, "pk":pk, "interview_num": interview_num}
-      return render(request, "mainboard.html", ctx)
+         interview_num = applicants.filter(~Q(status='submitted')).count()
+         ctx = {"applicants":applicants, "sort_applicants":sort_applicants, "pk":pk, "interview_num": interview_num}
+         return render(request, "mainboard.html", ctx)
    else:
       return redirect("accounts:login")

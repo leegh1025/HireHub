@@ -1,20 +1,275 @@
 from django.db.models import Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from applicants.models import Application
-from django.core.exceptions import PermissionDenied
+from applicants.models import Application, Answer
 from django.db import models, transaction
-from django.forms import modelformset_factory
-from django.views.decorators.csrf import csrf_exempt
-from datetime import time
 from .tasks import process_application
-from django.db import transaction
 from django.db.models.functions import Coalesce
+from django.utils import timezone
+from datetime import datetime
+from django.contrib.auth.decorators import login_required
 
-from .models import Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
+import io
+import zipfile
+import xlwt
+import openpyxl
+from openpyxl.utils import get_column_letter
+from django.http import HttpResponse, Http404
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+
+
+from django.core.mail import send_mail
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import logout as auth_logout
+
+# 인증 코드 생성
+import json
+from django.utils.crypto import get_random_string
+from .models import VerificationCode
+
+# 비밀번호 재설정
+from django.contrib.auth.views import PasswordResetView
+from django.views import View
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.urls import reverse
+
+from .models import Applicant, Application, Answer, Possible_date_list, Comment, individualQuestion, individualAnswer, Interviewer, AudioRecording
 from accounts.models import Interviewer, InterviewTeam
-from template.models import ApplicationTemplate, ApplicationQuestion, InterviewTemplate, InterviewQuestion
+from template.models import ApplicationTemplate, ApplicationQuestion, InterviewTemplate, InterviewQuestion, EvaluationTemplate
 from .forms import ApplicationForm, CommentForm, QuestionForm, AnswerForm, ApplyForm
+
+from template.models import ApplicationTemplate, InterviewTemplate, InterviewQuestion
+from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm, CustomPasswordResetForm
+
+# 지원자 초기 페이지
+def initial(request):
+    template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
+    # 목표 시간을 설정합니다.
+    target_time = timezone.make_aware(datetime(2024, 12, 1, 16, 0, 0), timezone=timezone.get_current_timezone())
+    print(target_time)
+    # 현재 시간 가져오기
+    current_time = timezone.localtime(timezone.now())
+    print(current_time)
+    # 목표 시간을 지났는지 여부를 계산
+    time_over = current_time >= target_time
+    print(time_over)
+
+    context = {'template': template, 'time_over': time_over,}
+    return render(request, 'for_applicant/initial.html', context)
+
+# 지원자 회원가입
+def signup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        email = data.get('email')
+        name = data.get('name')
+        phone_number = data.get('phone_number')
+        password = data.get('password')
+        password_confirm = data.get('password_confirm')
+        verification_code = data.get('code')
+
+        if Applicant.objects.filter(phone_number=phone_number).exists():
+            return JsonResponse({'success': False, 'message': '이미 가입된 전화번호입니다.'})
+
+        if password != password_confirm:
+            return JsonResponse({'success': False, 'message': '비밀번호가 일치하지 않습니다.'})
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+
+            if not verification.is_verified:
+                return JsonResponse({'success': False, 'message': '이메일 인증을 완료해야 합니다.'})
+
+            if verification.code == verification_code and not verification.is_expired():
+                applicant = Applicant.objects.create_user(
+                    email=email,
+                    name=name,
+                    phone_number=phone_number,
+                    password=password
+                )
+                return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+            
+            return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '입력한 이메일에 대한 인증번호가 존재하지 않습니다.'})
+    
+    return render(request, 'for_applicant/signup.html')
+    
+def send_verification_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        
+        if not email:
+            return JsonResponse({'success': False, 'message': '이메일을 입력해주세요.'})
+        if Applicant.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'message': '이미 존재하는 이메일입니다.'})
+
+        # 인증번호 생성 및 이메일 발송
+        code = get_random_string(length=6, allowed_chars='0123456789')
+        verification, created = VerificationCode.objects.update_or_create(
+            email=email,
+            defaults={'code': code, 'created_at': timezone.now()}  # 새로운 인증번호와 생성 시간 업데이트
+        )
+
+        send_mail(
+            'Your verification code',
+            f'Your verification code is {code}',
+            'pirogramming@naver.com',
+            [email],
+            fail_silently=False,
+        )
+
+        return JsonResponse({'success': True, 'message': '인증번호가 이메일로 전송되었습니다.'})
+
+def verify_code(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        input_code = data.get('code')
+
+        try:
+            verification = VerificationCode.objects.get(email=email)
+            
+            verification_code = str(verification.code)
+            input_code = str(input_code)
+            if verification_code == input_code and not verification.is_expired():
+                verification.is_verified = True
+                verification.save()
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'message': '유효하지 않은 인증번호이거나 인증번호가 만료되었습니다.'})
+        
+        except VerificationCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': '인증번호가 입력되지 않았습니다.'})
+
+def login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return JsonResponse({'success': False, 'message': '이메일과 비밀번호를 입력하세요.'})
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            if user.is_active:
+                auth_login(request, user)
+                if isinstance(user, Applicant):
+                    return JsonResponse({'success': True, 'redirect_url': '/applicants/'})
+                else:
+                    return JsonResponse({'success': False, 'message': '잘못된 계정입니다.'})
+            else:
+                return JsonResponse({'success': False, 'message': '계정이 비활성화되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '이메일 또는 비밀번호가 틀렸습니다.'})
+
+    return render(request, 'for_applicant/login.html')
+
+def logout(request):
+    auth_logout(request)
+    return redirect('applicants:initial')
+
+# 비밀번호 재설정
+class ApplicantPasswordResetView(PasswordResetView):
+    template_name = 'for_applicant/password_reset.html'
+    email_template_name = 'for_applicant/password_reset_email.html'
+    form_class = CustomPasswordResetForm
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            email = data.get('email', None)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': '잘못된 요청입니다.'})
+        
+        # 폼에 데이터를 바인딩해서 유효성 검사
+        form = self.form_class(data={'email': email})
+        if form.is_valid():
+            applicant = Applicant.objects.get(email=form.cleaned_data['email'])
+
+            # uid와 token 생성
+            uid = urlsafe_base64_encode(force_bytes(applicant.pk))
+            token = default_token_generator.make_token(applicant)
+
+            # 비밀번호 재설정 URL 생성
+            reset_url = reverse('applicants:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+            full_reset_url = f"{request.scheme}://{request.get_host()}{reset_url}"
+
+            message = """
+                비밀번호를 재설정하려면 아래 링크를 클릭하세요:
+                <a href="{0}">비밀번호 재설정 링크</a>
+            """.format(full_reset_url)
+
+            send_mail(
+                subject='비밀번호 재설정 요청',
+                message='비밀번호 재설정 링크: {0}'.format(full_reset_url),  # 텍스트 버전
+                from_email='pirogramming@naver.com',
+                recipient_list=[email],
+                fail_silently=False,
+                html_message=message  # HTML 버전
+            )
+
+            return JsonResponse({'success': True, 'message': '비밀번호 재설정 이메일이 발송되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '해당 이메일을 찾을 수 없습니다.'})
+
+class ApplicantPasswordResetConfirmView(View):
+    template_name = 'for_applicant/password_reset_confirm.html'
+    
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = Applicant.objects.get(pk=uid)
+            if default_token_generator.check_token(user, token):
+                return render(request, self.template_name)
+            else:
+                return render(request, 'for_applicant/password_reset_invalid.html')
+        except (TypeError, ValueError, OverflowError, Applicant.DoesNotExist):
+            return render(request, 'for_applicant/password_reset_invalid.html')
+    
+    def post(self, request, uidb64, token, *args, **kwargs):
+        try:
+            # JSON 데이터 파싱
+            data = json.loads(request.body)
+            new_password1 = data.get('new_password1')
+            new_password2 = data.get('new_password2')
+
+            # 기본 유효성 검사
+            if not new_password1 or not new_password2:
+                return JsonResponse({'success': False, 'message': '모든 필드를 입력해주세요.'})
+
+            if new_password1 != new_password2:
+                return JsonResponse({'success': False, 'message': '비밀번호가 일치하지 않습니다.'})
+
+            # 사용자 확인
+            try:
+                uid = force_str(urlsafe_base64_decode(uidb64))
+                user = Applicant.objects.get(pk=uid)
+            except (TypeError, ValueError, OverflowError, Applicant.DoesNotExist):
+                return JsonResponse({'success': False, 'message': '유효하지 않은 사용자입니다.'})
+
+            # 토큰 확인
+            if default_token_generator.check_token(user, token):
+                user.set_password(new_password1)
+                user.save()
+                return JsonResponse({'success': True, 'message': '비밀번호가 성공적으로 변경되었습니다!', 'redirect_url': '/applicants/'})
+            else:
+                return JsonResponse({'success': False, 'message': '비밀번호 재설정 링크가 만료되었습니다.'})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'message': '잘못된 요청 형식입니다.'})  
+        
 
 def interview(request):
     if request.user.is_authenticated:
@@ -56,6 +311,134 @@ def search_applicant(request):
     applicants = applicants.filter(~Q(status = 'submitted'))
     results = [{'id': applicant.id, 'name': applicant.name} for applicant in applicants]
     return JsonResponse(results, safe=False)
+
+
+
+def custom_pagination(text, canvas_obj, x_position, y_position, max_width, line_height, font_name, font_size, bottom_margin):
+    """
+    텍스트를 페이지 너비에 맞게 줄바꿈하고, 페이지가 끝나면 자동으로 페이지를 넘겨가며 텍스트를 그립니다.
+    """
+
+    canvas_obj.setFont(font_name, font_size)
+    words = text.split(' ')
+    line = ''
+    page_width, page_height = letter
+    
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        width = canvas_obj.stringWidth(test_line, font_name, font_size)
+
+        if width <= max_width:
+            line = test_line
+        else:
+            canvas_obj.drawString(x_position, y_position, line)
+            y_position -= line_height
+
+            if y_position < bottom_margin:
+                canvas_obj.showPage()  
+                canvas_obj.setFont(font_name, font_size)  
+                y_position = page_height - inch  
+
+            line = word
+
+    if line:
+        canvas_obj.drawString(x_position, y_position, line)
+        y_position -= line_height
+
+    return y_position
+
+
+def generate_pdf(applicant):
+    pdf_buffer = io.BytesIO()
+    p = canvas.Canvas(pdf_buffer, pagesize=letter)
+
+    # 한글 폰트 등록
+    pdfmetrics.registerFont(TTFont('Pretendard', 'static/fonts/PretendardVariable.ttf'))
+    font_name = 'Pretendard'
+    font_size = 10
+    p.setFont(font_name, font_size)
+
+    page_width, page_height = letter  
+    margin = 40  
+    max_width = page_width - 2 * margin  
+    line_height = 18  
+    bottom_margin = 50  
+
+    # 지원자 기본 정보 작성
+    y_position = 760  
+    y_position = custom_pagination(
+        f"지원자 정보| {str(applicant.name)} {str(applicant.school)}({str(applicant.major)})", 
+        p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+    )
+    submission_date = applicant.submission_date.astimezone(timezone.get_current_timezone()).strftime('%Y-%m-%d %H:%M:%S')
+    y_position = custom_pagination(
+        f"전화번호: {str(applicant.phone_number)} | 제출 일자: {submission_date}", 
+        p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+    )
+    y_position -= 40  
+
+    # 질문, 답변 작성
+    for answer in applicant.answers.all():  
+        question_text = f"[문항 {answer.question.id}] {answer.question.question_text}" 
+        answer_text = str(answer.answer_text) 
+        y_position = custom_pagination(
+            question_text, p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+        )
+        y_position -= 10 
+        y_position = custom_pagination(
+            answer_text, p, margin, y_position, max_width, line_height, font_name, font_size, bottom_margin
+        )
+        y_position -= 20  
+
+    p.showPage()
+    p.save()
+    pdf_buffer.seek(0)
+
+    return pdf_buffer.getvalue()
+
+
+# 1명 지원자 PDF 다운로드
+def download_pdf_single(request, applicant_id):
+    try:
+        applicant = Application.objects.get(pk=applicant_id)
+    except Application.DoesNotExist:
+        raise Http404(f"{applicant_id} not found")
+
+    pdf_data = generate_pdf(applicant)
+    
+    response = HttpResponse(pdf_data, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="지원서_{applicant.name}.pdf"'
+
+    return response
+
+# 여러 지원자 PDF ZIP 파일 다운로드
+def download_pdf(request):
+    applicant_ids = request.GET.getlist('applicants')
+
+    if not applicant_ids:
+        return HttpResponse("선택된 항목이 없습니다.", status=400)
+
+    zip_buffer = io.BytesIO()
+
+    # ZIP 파일 생성
+    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+        for applicant_id in applicant_ids:
+            try:
+                applicant = Application.objects.get(pk=applicant_id)
+            except Application.DoesNotExist:
+                raise Http404(f"Applicant with ID {applicant_id} not found")
+
+            pdf_data = generate_pdf(applicant)
+            zip_file.writestr(f"지원서_{applicant.name}.pdf", pdf_data)
+
+    zip_buffer.seek(0)
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="지원서.zip"'
+
+    return response
+
+
+
 
 def pass_document(request, applicant_id):
     if request.method == 'POST':
@@ -436,22 +819,60 @@ def applicant_rankings(req):
 ## 지원 ##
 def apply(request, pk):
     template = ApplicationTemplate.objects.get(id=pk)
-    form = ApplyForm()
 
+    final_application = Application.objects.filter(template=template, applicant=request.user, is_drafted=False).first()
+    if final_application:
+        # 최종 제출된 지원서가 있으면 지원 완료 페이지로 리디렉션
+        return redirect('applicants:apply_result')
+
+    # GET 요청일 때 임시 저장된 지원서를 확인하여 `load_draft`로 리디렉션
+    if request.method == 'GET':
+        try:
+            draft_application = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+            return redirect('applicants:load_draft', pk=pk)
+        except Application.DoesNotExist:
+            pass  # 임시 저장된 지원서가 없으면 새로운 작성 페이지로 계속 진행
+
+        # 새로운 작성 페이지를 위한 폼 생성
+        form = ApplyForm()
+        context = {
+            'form': form,
+            'template': template,
+        }
+        return render(request, 'for_applicant/write_apply.html', context)
+
+    # POST 요청일 때 최종 제출을 처리
     if request.method == 'POST':
-        form = ApplyForm(request.POST)
+        form = ApplyForm(request.POST, request.FILES)
         if form.is_valid():
             applyContent = form.save(commit=False)
             applyContent.template = template
+            applyContent.is_drafted = False
+            applyContent.applicant = request.user
             applyContent.save()
             form.save_m2m()
 
             answers = {}
             for question in template.questions.all():
                 answer_text = request.POST.get(f'answer_{question.id}')
-                answers[question.id] = answer_text
+                uploaded_file = request.FILES.get(f'file_{question.id}')
 
-            
+                answer, created = Answer.objects.get_or_create(
+                    application=applyContent,
+                    question=question
+                )
+
+                # 답변을 업데이트
+                if answer_text:
+                    answer.answer_text = answer_text
+                    answers[question.id] = answer_text  # 기존 로직의 answers에 반영
+                if uploaded_file:
+                    answer.file_upload = uploaded_file
+
+                # 최종 제출이므로 임시 저장 상태를 해제
+                answer.is_drafted = False
+                answer.save()
+                
             transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
 
             name = form.cleaned_data['name']
@@ -461,40 +882,163 @@ def apply(request, pk):
             request.session['submitted'] = True
 
             return redirect('applicants:apply_result')
-    
-    context = {
-        'form': form,
-        'template': template,
-    }
-    return render(request, 'for_applicant/write_apply.html', context)
+        else:
+            print("폼 검증 실패:", form.errors)
 
-def apply_check(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        phone_number = request.POST.get('phone_number')
-        request.session['name'] = name
-        request.session['phone_number'] = phone_number
-        request.session['submitted'] = False
-        return redirect('applicants:apply_result')
-    return render(request, 'for_applicant/apply_check.html')
-
-def apply_result(request):
-    name = request.session.get('name')
-    phone_number = request.session.get('phone_number')
-    submitted = request.session.get('submitted')
-    if name and phone_number:
-        if submitted == False:
-            try:
-                application = Application.objects.get(name=name, phone_number=phone_number)
-                submitted = True
-            except Application.DoesNotExist:
-                submitted = False
+        # 폼이 유효하지 않은 경우, 폼과 함께 다시 렌더링
         context = {
-            'submitted': submitted,
+            'form': form,
+            'template': template,
         }
-        return render(request, 'for_applicant/apply_result.html', context)
-    else:
-        return redirect('applicants:apply_check')
+        return render(request, 'for_applicant/write_apply.html', context)
+
+
+#임시 저장 
+@login_required
+def save_draft(request, pk):
+    template = ApplicationTemplate.objects.get(id=pk)
+
+    try:
+        applyContent = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+    except Application.DoesNotExist:
+        applyContent = None   # 없으면 빈 폼으로 시작
+
+    if request.method == 'POST':
+        form = ApplyForm(request.POST, request.FILES, instance=applyContent)
+        if form.is_valid():
+            applyContent = form.save(commit=False)
+            applyContent.template = template
+            applyContent.is_drafted = True  # 임시 저장 상태 설정
+            applyContent.applicant = request.user
+            applyContent.save()
+            form.save_m2m()
+
+
+            # 새 답변 저장
+            for question in template.questions.all():
+                answer_text = request.POST.get(f'answer_{question.id}')
+                uploaded_file = request.FILES.get(f'file_{question.id}')
+
+                # 기존 답변이 있는지 확인하고 있으면 업데이트, 없으면 새로 저장
+                answer, created = Answer.objects.get_or_create(
+                    application=applyContent,
+                    question=question,
+                    defaults={'answer_text': answer_text, 'file_upload': uploaded_file}
+                )
+                if not created:
+                    # 기존 답변이 있다면 업데이트
+                    answer.answer_text = answer_text
+                    answer.file_upload = uploaded_file
+                    answer.save()
+                
+                print(f"답변 저장됨: 질문 ID={question.id}, 답변 텍스트={answer.answer_text}, 파일={answer.file_upload}")
+
+            answers = {str(answer.question.id): answer.answer_text for answer in applyContent.answers.all()}
+            print(f"생성된 딕셔너리 answers: {answers}")
+
+            return JsonResponse({'status': 'draft_saved', 'application_id': applyContent.id})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Form is invalid'})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
+@login_required
+def load_draft(request, pk):
+    if request.method == 'GET':
+        template = ApplicationTemplate.objects.get(id=pk)
+
+        try:
+            applyContent = Application.objects.get(template=template, applicant=request.user, is_drafted=True)
+            form = ApplyForm(instance=applyContent)
+            answers = {str(answer.question.id): answer.answer_text for answer in applyContent.answers.all()}
+            
+        except Application.DoesNotExist:
+            print("Application 객체를 찾을 수 없습니다.")
+            form = ApplyForm()
+            answers = {}
+
+        context = {
+            'form': form,
+            'template': template,
+            'answers': answers,
+        }
+        return render(request, 'for_applicant/write_apply.html', context)
+
+    # 만약 POST 등의 다른 요청이 오면 허용되지 않은 메서드로 처리
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
 def apply_timeover(request):
     return render(request, 'for_applicant/timeover.html')
+
+def download_default_excel(request):
+    default_evaluate = EvaluationTemplate.objects.filter(is_default=True).first()
+    if not default_evaluate:
+        return HttpResponse("기본 템플릿이 설정되지 않았습니다.", status=404)
+
+    applications = Application.objects.filter(evaluation_template=default_evaluate).select_related('interview_team').prefetch_related('interviewer', 'comments', 'evaluations')
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "평가표"
+
+    # 제목, 설명
+    ws.merge_cells('A1:H1')
+    ws['A1'] = f"{default_evaluate.title}"
+    ws.merge_cells('A2:H2')
+    ws['A2'] = f"{default_evaluate.description}"
+
+    # 테이블 헤더 설정
+    headers = ["면접팀", "면접자", "지원자", "학교", "전공"]
+    question_headers = [f"{idx + 1}번" for idx, question in enumerate(default_evaluate.questions.all())]
+    headers.extend(question_headers)
+    headers.append("총 점수")
+    headers.append("코멘트")
+    
+    for col_num, header in enumerate(headers, 1):
+        col_letter = get_column_letter(col_num)
+        ws[f'{col_letter}3'] = header
+
+    row_num = 4  
+    for application in applications:
+        interview_team = application.interview_team
+        applicant_name = application.name
+        school = application.school if application.school else ""
+        major = application.major if application.major else ""
+        
+        # 면접 팀의 모든 멤버 가져오기
+        interviewers = interview_team.members.all() if interview_team else []
+
+        # 지원자 정보를 첫 번째 행에만 기록
+        first_row = True
+        for interviewer in interviewers:
+            # 해당 면접관의 평가가 있을 경우 불러오기
+            evaluation = application.evaluations.filter(interviewer=interviewer).first()
+            ws[f'A{row_num}'] = interview_team.team_name if interview_team and first_row else ""  # 면접팀 
+            ws[f'B{row_num}'] = interviewer.name  # 면접관 
+            ws[f'C{row_num}'] = applicant_name if first_row else ""  # 지원자
+            ws[f'D{row_num}'] = school if first_row else ""  # 학교
+            ws[f'E{row_num}'] = major if first_row else ""  # 전공
+            first_row = False  
+
+            # 질문 개별 점수
+            for idx, question in enumerate(default_evaluate.questions.all(), start=1):
+                col_letter = get_column_letter(5 + idx)
+                score = evaluation.scores.filter(question=question).first().score if evaluation and evaluation.scores.filter(question=question).exists() else 0
+                ws[f'{col_letter}{row_num}'] = score
+
+            # 질문 총 점수
+            total_score_col = get_column_letter(5 + len(question_headers) + 1)
+            ws[f'{total_score_col}{row_num}'] = evaluation.total_score if evaluation else 0
+    
+            # 코멘트
+            comments_col = get_column_letter(5 + len(question_headers) + 2)
+            comment = application.comments.filter(interviewer=interviewer).first()
+            ws[f'{comments_col}{row_num}'] = comment.text if comment else ""
+            row_num += 1  
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename={default_evaluate.title}_평가표.xlsx'
+    
+    wb.save(response)
+    return response

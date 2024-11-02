@@ -1,7 +1,10 @@
 from django.db import models
 from accounts.models import Interviewer, InterviewTeam
 from template.models import ApplicationTemplate, ApplicationQuestion
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 import datetime as dt
+from django.utils import timezone
+from datetime import timedelta
 
 class Possible_date_list(models.Model):
     AMPM_CHOICES = [
@@ -18,6 +21,45 @@ class Possible_date_list(models.Model):
     def __str__(self):
         return f'{self.possible_date}, {self.possible_ampm}'
 
+class ApplicantManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("The Email must be set")
+        email = self.normalize_email(email)
+        phone_number = extra_fields.get('phone_number')
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+class Applicant(AbstractBaseUser):
+    name = models.CharField(max_length=20, null=False)
+    phone_number = models.CharField(max_length=15)
+    email = models.EmailField(max_length=255, unique=True, null=False, blank=False)
+    is_active = models.BooleanField(default=True) # 이메일 인증 전에는 비활성화
+    is_staff = models.BooleanField(default=True)
+
+    objects = ApplicantManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name']
+
+    def __str__(self):
+        return self.email
+
+class VerificationCode(models.Model):
+    email = models.EmailField(unique=True)
+    code = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        expiration_time = self.created_at + timedelta(minutes=10)  # 10분 후 만료
+        return timezone.now() > expiration_time
+
+    def __str__(self):
+        return f"{self.email}: {self.code}"
+
 class Application(models.Model):
     STATUS_CHOICES = [
         ('submitted', '서류 제출'),
@@ -31,6 +73,7 @@ class Application(models.Model):
         TIME_CHOICES.append((dt.time(hour=x), '{:02d}:00'.format(x)))
         TIME_CHOICES.append((dt.time(hour=x, minute=30), '{:02d}:30'.format(x)))
 
+    applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE)
     template = models.ForeignKey(ApplicationTemplate, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15)
@@ -46,6 +89,7 @@ class Application(models.Model):
     interview_date = models.ForeignKey(Possible_date_list, on_delete=models.SET_NULL, blank=True, null=True, related_name='interview_date')
     interview_time = models.TimeField(choices=TIME_CHOICES, blank=True, null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='submitted')
+    is_drafted = models.BooleanField(default=True) #True면 임시저장이고, False면 최종 제출된 상태
 
     def __str__(self):
         return f'{self.name}'
@@ -56,7 +100,8 @@ class Application(models.Model):
 class Answer(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='answers')
     question = models.ForeignKey(ApplicationQuestion, on_delete=models.CASCADE) #특정 질문에 대한 답변
-    answer_text = models.TextField()
+    answer_text = models.TextField(blank=True, null=True)
+    file_upload = models.FileField(upload_to="uploads/", blank=True, null=True)
 
 class Comment(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='comments')

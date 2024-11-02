@@ -12,7 +12,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import secrets
 import environ
+
+SECRET_KEY = secrets.token_urlsafe(50)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,13 +27,13 @@ environ.Env.read_env(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY=env('SECRET_KEY')
+#SECRET_KEY=env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['13.125.25.250','hirehub.kr', 'localhost','127.0.0.1']
-
+#ALLOWED_HOSTS = ['13.125.25.250','hirehub.kr', 'localhost','127.0.0.1']
+ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -82,13 +86,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/eng/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'HOST': env('DB_HOST'),
+#         'NAME': env('DB_NAME'),
+#         'USER': env('DB_USER'),
+#         'PASSWORD': env('DB_PASSWORD'),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': env('DB_HOST'),
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -141,7 +157,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
+    "django.contrib.auth.backends.ModelBackend",  # Interviewer 인증
+    "applicants.backends.ApplicantBackend",  # Applicant 인증 백엔드
 ]
 
 AUTH_USER_MODEL = 'accounts.Interviewer'
@@ -152,10 +169,23 @@ LOGIN_FIELDS = ['email']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-CELERY_BROKER_URL = env('CELERY_BROKER_URL')
-CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
-CELERY_ACCEPT_CONTENT = env.list('CELERY_ACCEPT_CONTENT', default=['json'])
-CELERY_TASK_SERIALIZER = env('CELERY_TASK_SERIALIZER', default='json')
-CELERY_RESULT_SERIALIZER = env('CELERY_RESULT_SERIALIZER', default='json')
-CELERY_TIMEZONE = env('CELERY_TIMEZONE', default='Asia/Seoul')
+# CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+# CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
+# CELERY_ACCEPT_CONTENT = env.list('CELERY_ACCEPT_CONTENT', default=['json'])
+# CELERY_TASK_SERIALIZER = env('CELERY_TASK_SERIALIZER', default='json')
+# CELERY_RESULT_SERIALIZER = env('CELERY_RESULT_SERIALIZER', default='json')
+# CELERY_TIMEZONE = env('CELERY_TIMEZONE', default='Asia/Seoul')
 
+
+# 회원가입 이메일 인증
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.naver.com'                     # 메일 호스트 서버
+EMAIL_PORT = 587                                # 서버 포트
+EMAIL_HOST_USER = env('EMAIL_MAIL')               # 우리가 사용할 mail
+EMAIL_HOST_PASSWORD = env('EMAIL_PWD')            # 우리가 사용할 mail의 pwd
+
+EMAIL_USE_TLS = True                              # TLS 보안 설정
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER              # 응답 메일 관련 설정
+
+SESSION_COOKIE_SECURE = False  # 개발 환경에서만 False로 설정, 실제 배포 환경에서는 True
+SESSION_COOKIE_HTTPONLY = True
