@@ -24,6 +24,7 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['text']
 
+
 class ApplyForm(forms.ModelForm):
     possible_date = forms.ModelMultipleChoiceField(
         queryset = Possible_date_list.objects.all(),
