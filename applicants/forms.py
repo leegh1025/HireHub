@@ -12,6 +12,7 @@ class CustomPasswordResetForm(PasswordResetForm):
             raise forms.ValidationError("해당 이메일은 가입되어 있지 않습니다.")
         return email
 
+
 class ApplicationForm(forms.ModelForm):
     name = forms.CharField(label='Name', max_length=100)
 
