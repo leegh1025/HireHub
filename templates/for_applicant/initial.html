@@ -17,15 +17,41 @@
     </div>
 {% endblock %}
 {% block content %}
-    <div class="initial_applicant">
-        {% if user.is_authenticated %}
-            <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
-            <div class="responsive_initial_btns">
-                <a class="link_write" href="{% url 'applicants:apply' pk=template.pk %}">지원하러 바로가기</a>
+    <div class="initialApplicant_container1">
+        <p>현재 모집 중</p>
+        <div class="initialApplicant_container2">
+            <div class="introduce_container">
+                <div class="introduce_content">
+                    <div class="content_top">
+                        <img src="{% static 'images/piro_logo.png' %}">
+                        <p class="introduce slogan">프로그래밍의 첫 걸음,</p>
+                        <p class="introduce piro">PIROGRAMMING</p>
+                        <p class="introduce content">문구 추천 좀</p>
+                    </div>
+                    <a href="link_write" href="{% url 'applicants:apply' pk=template.pk %}">
+                        <span>22기 서류 지원하러 가기</span>
+                        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd" d="M7.54974 2.67425C7.62521 2.59858 7.71487 2.53855 7.81358 2.49759C7.91229 2.45663 8.01812 2.43555 8.12499 2.43555C8.23186 2.43555 8.33768 2.45663 8.43639 2.49759C8.5351 2.53855 8.62476 2.59858 8.70024 2.67425L18.4502 12.4242C18.5259 12.4997 18.5859 12.5894 18.6269 12.6881C18.6679 12.7868 18.6889 12.8926 18.6889 12.9995C18.6889 13.1064 18.6679 13.2122 18.6269 13.3109C18.5859 13.4096 18.5259 13.4993 18.4502 13.5747L8.70024 23.3247C8.54767 23.4773 8.34075 23.563 8.12499 23.563C7.90923 23.563 7.7023 23.4773 7.54974 23.3247C7.39717 23.1722 7.31146 22.9653 7.31146 22.7495C7.31146 22.5337 7.39717 22.3268 7.54974 22.1742L16.7261 12.9995L7.54974 3.82475C7.47407 3.74928 7.41404 3.65961 7.37308 3.5609C7.33212 3.46219 7.31104 3.35637 7.31104 3.2495C7.31104 3.14263 7.33212 3.03681 7.37308 2.93809C7.41404 2.83938 7.47407 2.74972 7.54974 2.67425Z" fill="black"/>
+                            </svg>
+                    </a>
+                </div>
             </div>
-        {% else %}
-            <a class="link_check" href="{% url 'applicants:login' %}">피로그래밍 22기 지원하러 바로가기</a>
-        {% endif %}
+            <div class="schedule_container">
+                <div class="schedule">피로그래밍 22기 일정</div>
+                <div id="schedule_grid">
+                    <div class="grid_content">서류 제출 기간</div>
+                    <div class="grid_content">11.29 ~ 12.06</div>
+                    <div class="grid_content">서류 결과 공지</div>
+                    <div class="grid_content">12.11</div>
+                    <div class="grid_content">대면 면접 기간</div>
+                    <div class="grid_content">12.14 ~ 12.15</div>
+                    <div class="grid_content">최종 결과 공지</div>
+                    <div class="grid_content">12.08</div>
+                    <div class="grid_content">22기 워크샵</div>
+                    <div class="grid_content">12.21</div>
+                </div>
+            </div>
+        </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

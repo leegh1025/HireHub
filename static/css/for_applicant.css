@@ -1,193 +1,111 @@
+header {
+   height: 9.5rem;
+}
 main {
    padding: 1rem 3rem;
+   height: calc(100vh - 9.5rem);
 }
 /* initial.html */
-.initial_btns a {
+.initial_btns {
+   margin-bottom: 1rem;
+}
+.initial_btns a, .initial_btns span, #logout_btn {
    text-decoration: none;
    font-size: 2rem;
-}
-.initial_btns span {
-   font-size: 2rem;
-}
-#logout_btn {
-   margin-left: 2rem;
+   color: #A3A3A3;
    margin-right: 3rem;
-   color: white;
-   background-color: var(--main-color);
-   padding: 1.3rem 2rem;
-   border-radius: 1rem;
 }
-.link_login {
-   color: black;
+.initial_btns a:hover, #logout_btn:hover {
+   text-decoration: underline;
+   text-decoration-thickness: 1.5px;
+   text-underline-offset : 3px;
 }
-.link_signup {
-   color: white;
-   background-color: var(--main-color);
-   padding: 1.3rem 2.5rem;
-   margin: 0 3rem;
-   margin-left: 2rem;
-   border-radius: 1rem;
-   font-weight: 600;
-}
-.initial_applicant {
+.initialApplicant_container1 {
    display: flex;
    flex-direction: column;
+   padding: 4rem 4rem;
    height: 100%;
-   align-items: center;
-   justify-content: center;
-   color: black;
 }
-.main_comment {
-   font-size: 5rem;
-}
-.main_logo {
-   font-family: var(--eng-font);
-   font-size: 6rem;
-   font-weight: bold;
-   color: var(--main-color);
-}
-.link_write {
-   color: white;
-   background-color: var(--main-color);
-   padding: 1.3rem 4rem;
-   margin-bottom: 1.5rem;
-   border-radius: 1rem;
-   font-weight: 500;
-   font-size: 3rem;
-}
-.link_check {
-   color: black;
-   font-size: 3rem;
-   font-weight: 500;
-   padding: 1.3rem 2rem;
-}
-.link_write:hover, .link_check:hover {
-   transform: translateY(-5px);
-   transition-duration: .5s;
-}
-
-/* apply_check.html */
-.status_container {
+.initialApplicant_container2 {
+   display: flex;
    height: 100%;
-   display: flex;
+   justify-content: space-between;
 }
-.status_left_container {
-   width: 50%;
-   height: 100%;
-   display: flex;
-   justify-content: center;
-   align-items: center;
+.introduce_container {
+   width: 70%;
 }
-.club_container {
-   width: 57rem;
-   height: 57.8rem;
-   box-shadow: 0 0.4rem 2rem rgba(28,101,239, 0.1);
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   justify-content: center;
-}
-.club_name {
+.introduce, .initialApplicant_container1 > p {
    font-size: 3.2rem;
-   margin-bottom: 13rem;
-}
-.club_description {
-   font-size: 6rem;
-   font-weight: 600;
-   margin-bottom: 3rem;
-}
-
-.status_right_container {
-   width: 50%;
-   height: 100%;
-   display: flex;
-   flex-direction: column;
-   justify-content: center;
-   align-items: center;
-}
-.status_logo {
-   font-family: var(--eng-font);
-   font-size: 6rem;
-   font-weight: bold;
-   color: var(--main-color);
-   margin-bottom: 17rem;
-   text-align: center;
-}
-#statuscheck_form {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-}
-#statuscheck_form input {
-   width: 50rem;
-   height: 6.5rem;
-   border-radius: 1.9rem;
-   font-size: 2.4rem;
-   color: black;
-   padding-left: 20px;
-   border: 2px solid var(--main-color);
    margin-bottom: 1.5rem;
+   margin-left: 1rem;
+   font-weight: 500;
 }
-.status_container button {
+.introduce_content {
+   background-color: #DFF8E0;
+   border-radius: 2rem;
+   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+   padding: 4rem;
+   height: 90%;
+   display: flex;
+   flex-direction: column;
+   justify-content: space-between;
+}
+.introduce_content p {
+   margin-bottom: 0;
+}
+.introduce_content img {
+   width: 16rem;
+   margin-bottom: 2rem;
+}
+.slogan {
    font-size: 2.4rem;
+   font-weight: normal;
+   margin-bottom: -1rem;
+}
+.piro {
+   font-size: 4.5rem;
    font-weight: bold;
-   color: var(--main-color);
-   margin-top: 7.4rem;
-   margin-left: 32rem;
-   display: flex;
-   align-items: center;
-}
-.status_container button img {
-   width: 3.5rem;
-   height: 3.5rem;
-}
-
-fieldset {
-   border: none !important;
-}
-
-/* apply_result.html */
-.applyResult_container {
-   height: 100%;
-   display: flex;
-   flex-direction: column;
-   justify-content: center;
-   align-items: center;
-   text-align: center;
-}
-.result_head {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-}
-.result_head p {
    font-family: var(--eng-font);
-   color: var(--main-color);
-   font-size: 6rem;
-   line-height: 8rem;
-   font-weight: 600;
+   line-height: 4rem;
 }
-.result_head img {
-   width: 9rem;
-   height: 9rem;
+.content {
+   margin-top: 3rem;
+   font-size: 2rem;
 }
-.result_comment, .resultno_comment {
-   font-size: 3.6rem;
-   margin-top: 7.8rem;
-   margin-bottom: 3rem;
-}
-.applyResult_container a {
+.introduce_content a {
+   font-size: 2.4rem;
    display: flex;
    align-items: center;
-   text-decoration: none;
-   font-size: 2rem;
-   font-weight: 600;
-   color: black;
+   justify-content: flex-end;
+   transition: all 0.3s ease-out;
 }
-.applyResult_container a img {
-   width: 2.4rem;
-   height: 2.4rem;
-   margin-right: 0.5rem;
+.introduce_content a span {
+   margin-right: 2rem;
+}
+.introduce_content a:hover {
+   transform: translateY(-5px);
+}
+
+.schedule_container {
+   width: 25%;
+
+}
+.schedule {
+   font-size: 2.5rem;
+   font-weight: 500;
+   width: 100%;
+   border-bottom: 1px solid rgba(0,0,0);
+   padding-bottom: 1rem;
+   margin-bottom: 2rem;
+   padding-left: 1rem;
+}
+#schedule_grid {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   padding: 0 1rem;
+   justify-items: start;
+   font-size: 2rem;
+   gap: 1.3rem;
 }
 
 /* signup.html */
