@@ -109,44 +109,102 @@ main {
 }
 
 /* signup.html */
+.signup_container {
+   display: flex;
+   height: 100%;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+}
+.signupform_container {
+   display: flex;
+   align-items: center;
+}
 .signup_head {
    margin-bottom: 50px;
+   font-size: 4rem;
+   font-weight: bold;
+   font-family: var(--eng-font);
 }
 #signup_form {
-   width: 500px;
-   align-items: normal;
+   width: 35rem;
+   display: flex;
+   flex-direction: column;
 }
-.signup_input {
-   width: 30rem;
-   height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 1.8rem;
-   border: 1.5px solid var(--main-color);
-   margin-bottom: 0px;
-}
+
 [id$="box"] {
    display: flex;
    align-items: center;
    margin-bottom: 1rem;
+   justify-content: space-between;
 }
 [id$="box"] label {
    font-size: 1.5rem;
    display: inline-block;
-   width: 90px;
-   margin-left: 10px;
+   /* width: 15rem; */
    font-weight: 500;
 }
-[id$="box"] button {
-   font-size: 1rem;
-   display: inline-block;
-   width: 50px;
-   margin-left: 30px;
+
+.signup_input {
+   width: 25rem;
+   height: 4.4rem;
+   border-radius: 1rem;
+   font-size: 1.3rem;
+   border: 3px solid #F3F3F3;
+   margin-bottom: 0px;
+   padding-left: 10px;
+}
+.signup_email {
+   display: flex;
+   width: 47rem;
+   justify-content: space-between;
+   align-items: center;
+}
+#email_box {
+   flex-direction: column;
+   align-items: flex-start;
+}
+#email_box input {
+   width: 35rem;
+   margin-top: 10px;
+}
+
+#code_box label {
+   color: var(--gray-color);
+}
+#code_box input {
+   width: 17rem;
+   border: none;
+   border-bottom: 2px solid #F3F3F3;
+   border-radius: 0;
+   margin-right: 1rem;
+}
+.code_send {
+   width: 35rem;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+}
+#send_code_btn {
+   width: 10rem;
+   height: 4rem;
+   border-radius: 7px;
    background-color: var(--main-color);
    color: white;
-   padding: 10px 5px;
-   border-radius: 1rem;
    font-weight: 500;
+   font-size: 1.4rem;
+   margin-top: 1.5rem;
 }
+#verify_code_btn {
+   width: 7rem;
+   height: 3rem;
+   border-radius: 0.7rem;
+   background-color: var(--gray-color);
+   color: white;
+   font-weight: 500;
+   font-size: 1.3rem;
+}
+
 .button_container {
    display: flex;
    justify-content: center;
@@ -156,9 +214,9 @@ main {
    background-color: var(--main-color);
    color: white;
    width: 35rem;
-   height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 2rem;
+   height: 6rem;
+   border-radius: 1rem;
+   font-size: 2.4rem;
    font-weight: bold;
    margin-top: 5rem;
 }
@@ -168,7 +226,6 @@ main {
 }
 #verification_status p {
    margin: 0px;
-   margin-bottom: 10px;
    font-size: 1.5rem;
    font-weight: 500;
 }
