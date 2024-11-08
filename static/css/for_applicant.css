@@ -109,7 +109,7 @@ main {
 }
 
 /* signup.html */
-.signup_container {
+.signup_container, .login_container {
    display: flex;
    height: 100%;
    flex-direction: column;
@@ -120,7 +120,7 @@ main {
    display: flex;
    align-items: center;
 }
-.signup_head {
+.signup_head, .login_head {
    margin-bottom: 50px;
    font-size: 4rem;
    font-weight: bold;
@@ -145,7 +145,7 @@ main {
    font-weight: 500;
 }
 
-.signup_input {
+.signup_input, #login_form input {
    width: 25rem;
    height: 4.4rem;
    border-radius: 1rem;
@@ -210,7 +210,7 @@ main {
    justify-content: center;
    align-items: center;
 }
-#signup_btn {
+#signup_btn, #login_btn {
    background-color: var(--main-color);
    color: white;
    width: 35rem;
@@ -231,43 +231,34 @@ main {
 }
 
 /* login.html */
-.login_head {
-   margin-bottom: 50px;
-}
 #login_form {
-   width: 500px;
+   width: 35rem;
    align-items: center;
 }
 #login_form input {
-   width: 50rem;
-   height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 1.8rem;
-   border: 1.5px solid var(--main-color);
-   margin-bottom: 10px;
-   padding: 0 2rem;
-}
-#login_form button {
-   background-color: var(--main-color);
-   color: white;
    width: 35rem;
    height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 2rem;
-   font-weight: bold;
-   margin-top: 5rem;
+   margin-top: 0.8rem;
+   margin-bottom: 2.4rem;
+}
+#login_form label {
+   font-size: 1.5rem;
+   font-weight: 500;
+   margin-left: 1rem;
 }
 .link_container {
    display: flex;
    align-items: center;
    justify-content: space-between;
-   width: 25rem;
-}
-.divider, .findpwd_link {
-   margin-top: 1.8rem;
+   width: 22rem;
+   margin-top: 2.6rem;
    font-size: 1.6rem;
+   color: #9A9A9A;
 }
-.signup_link:hover, .findpwd_link:hover {
+.link_container a {
+   color: #9A9A9A;
+}
+.link_container a:hover {
    text-decoration: underline;
 }
 
