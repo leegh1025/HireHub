@@ -33,27 +33,24 @@ class ApplyForm(forms.ModelForm):
         widget = forms.CheckboxSelectMultiple(attrs={'class': 'apply_input'}),
     )
     name = forms.CharField(
-        widget=forms.TextInput(attrs={'placeholder': '이름 (예: 홍길동)', 'class': 'apply_input'})
+        label = "이름",
+        widget=forms.TextInput(attrs={'class': 'apply_input'}),
     )
     phone_number = forms.CharField(
-        widget=forms.TextInput(attrs={'placeholder': '전화번호 (예: 01012345678)', 'class': 'apply_input'})
+        label = "전화번호",
+        widget=forms.TextInput(attrs={'placeholder': '기호 없이 번호를 입력해주세요.', 'class': 'apply_input'})
     )
     school = forms.CharField(
-        widget=forms.TextInput(attrs={'placeholder': '대학교 (예: 피로대학교)', 'class': 'apply_input'})
+        label = "대학교",
+        widget=forms.TextInput(attrs={'placeholder': '피로대학교', 'class': 'apply_input'})
     )
     major = forms.CharField(
+        label = "학과",
         widget=forms.TextInput(attrs={'placeholder': '주전공 (예: 피로학과)', 'class': 'apply_input'})
     )
     class Meta:
         model = Application
         fields = ['name', 'phone_number', 'school', 'major', 'possible_date']
-    
-    def __init__(self, *args, **kwargs):
-        super(ApplyForm, self).__init__(*args, **kwargs)
-        self.fields['name'].label = ''
-        self.fields['phone_number'].label = ''
-        self.fields['school'].label = ''
-        self.fields['major'].label = ''
 
 class QuestionForm(forms.ModelForm):
     class Meta:

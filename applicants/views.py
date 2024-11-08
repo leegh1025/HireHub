@@ -817,6 +817,7 @@ def applicant_rankings(req):
     return render(req, 'applicant_rankings.html', context)
 
 ## 지원 ##
+@login_required(login_url='/applicants/login/')
 def apply(request, pk):
     template = ApplicationTemplate.objects.get(id=pk)
 

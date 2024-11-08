@@ -8,12 +8,32 @@
 
 {% block content %}
 <div class="apply_container">
-   <h2>지원서 | {{ template.name }}</h2>
-   <p>{{ template.description }}</p>
+   <p class="apply_name">{{ template.name }}</p>
+   <p class="apply_description">{{ template.description }}</p>
    <form action="{% url 'applicants:apply' pk=template.pk %}" method="post" id="applyForm", enctype="multipart/form-data">
       {% csrf_token %}
       <div class="apply_content">
-         {{ form.as_p }}
+         <div>
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+         </div>
+         <div>
+            <label for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}</label>
+            {{ form.phone_number }}
+         </div>
+         <div>
+            <label for="{{ form.school.id_for_label }}">{{ form.school.label }}</label>
+            {{ form.school }}
+         </div>
+         <div>
+            <label for="{{ form.major.id_for_label }}">{{ form.major.label }}</label>
+            {{ form.major }}
+         </div>
+         <div class="possible_date_content">
+            <label for="{{ form.possible_date.id_for_label }}">{{ form.possible_date.label }}</label>
+            {{ form.possible_date }}
+         </div>
+
          <ol class="questions_list">
             {% for question in template.questions.all %}
                <li class="question">
@@ -28,8 +48,10 @@
          </ol>
       </div>
    </form>
-   <button type="button" onclick="saveDraft()">임시 저장</button>
-   <button type="submit" onclick="submitForm()">지원서 제출하기</button>
+   <div class="apply_button">
+      <button type="button" onclick="saveDraft()">임시 저장</button>
+      <button type="submit" onclick="submitForm()">지원서 제출하기</button>
+   </div>
 </div>
 <script>
    function saveDraft() {
