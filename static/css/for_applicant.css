@@ -170,7 +170,7 @@ main {
 }
 
 #code_box label {
-   color: var(--gray-color);
+   color: #6A6A6A;
 }
 #code_box input {
    width: 17rem;
@@ -199,7 +199,7 @@ main {
    width: 7rem;
    height: 3rem;
    border-radius: 0.7rem;
-   background-color: var(--gray-color);
+   background-color: #6A6A6A;
    color: white;
    font-weight: 500;
    font-size: 1.3rem;
