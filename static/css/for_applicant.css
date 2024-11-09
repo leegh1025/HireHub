@@ -353,3 +353,59 @@ main {
    font-size: 2.4rem;
    margin-top: 7rem;
 }
+
+/* apply_result.html */
+.result_container {
+   display: flex;
+   height: 100%;
+   flex-direction: column;
+   align-items: center;
+   justify-content: space-between;
+   padding: 3rem 0;
+}
+.result_banner {
+   background-color: black;
+   width: 100%;
+   border-radius: 1.6rem;
+   padding: 2rem 4rem;
+   color: white;
+   display: flex;
+   font-family: var(--eng-font);
+   justify-content: space-between;
+   align-items: flex-end;
+}
+.banner_content p {
+   font-size: 2rem;
+   font-weight: 600;
+   line-height: 2.8rem;
+}
+.banner_content p span {
+   color: #4EFF00;
+   font-size: 3rem;
+}
+#i, #o {
+   color: #618C4E;
+}
+.result_piro {
+   font-size: 1.6rem;
+   font-weight: 500;
+}
+.result_content {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+.result_content img {
+   width: 8.8rem;
+   margin-bottom: 3.4rem;
+}
+.result_content p {
+   font-size: 2.4rem;
+   font-weight: 500;
+}
+.result_container a {
+   color: #BDBCBC;
+   text-decoration: underline;
+   text-underline-offset: 2px;
+   font-size: 2rem;
+}
