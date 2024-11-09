@@ -9,7 +9,7 @@
    #mainLogo {
       width: 12rem;
    }
-   .initial_btns span, .initial_btns a {
+   .initial_btns span, .initial_btns a, #logout_btn {
       font-size: 1.2rem;
    }
    .initialApplicant_container1 {
@@ -56,7 +56,7 @@
    }
 
    /* signup.html */
-   .signup_head {
+   .signup_head, .login_head {
       font-size: 3.2rem;
    }
    .signup_email {
@@ -64,5 +64,38 @@
    }
    #email_box input {
       width: 24rem;
+   }
+
+   /* password_reset.html */
+   .password_reset {
+      justify-content: flex-start;
+      margin-top: 2rem;
+      width: 100%;
+   }
+   .password_reset_head { 
+      margin-bottom: 1rem;
+   }
+   .password_reset_container {
+      padding: 2rem 1.5rem;
+      height: 60rem;
+   }
+   .password_reset_intro img {
+      width: 2.3rem;
+   }
+   .password_reset_intro span {
+      font-size: 1.3rem;
+   }
+   #password_reset_form {
+      width: 100%;
+      align-items: center;
+      flex-direction: column;
+   }
+   #password_reset_form button {
+      margin-top: 2rem;
+      font-size: 2rem;
+   }
+   #password_reset_confirm_btn {
+      font-size: 2rem;
+      height: 5.4rem;
    }
 }
