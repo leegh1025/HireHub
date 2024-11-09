@@ -98,4 +98,23 @@
       font-size: 2rem;
       height: 5.4rem;
    }
+
+   /* apply_result.html */
+   .result_banner {
+      padding: 2rem 1.5rem;
+      height: 25rem;
+      flex-direction: column;
+      align-items: flex-start;
+   }
+   .result_piro {
+      margin-left: auto;
+      font-size: 1.4rem;
+   }
+   .result_content img {
+      width: 7rem;
+      margin-bottom: 2.6rem;
+   }
+   .result_content p, .result_container a {
+      font-size: 1.5rem;
+   }
 }
