@@ -54,4 +54,15 @@
    #schedule_grid div {
       font-size: 1.6rem;
    }
+
+   /* signup.html */
+   .signup_head {
+      font-size: 3.2rem;
+   }
+   .signup_email {
+      width: 100%;
+   }
+   #email_box input {
+      width: 24rem;
+   }
 }
