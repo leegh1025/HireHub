@@ -119,27 +119,26 @@ main {
    margin: 20px 0; */
 }
 
-@media (max-width: 690px) {
-   .apply_container h2 {
-      font-size: 2.4rem;
+@media (max-width: 767px) {
+   main {
+      padding: 2rem;
    }
-   .apply_container p {
-      font-size: 1.8rem;
+   .apply_container {
+      width: 100%;
+      padding: 2rem 1.5rem;
    }
-   #applyForm {
-      padding: 1.8rem;
-   }
-   .apply_content input, .question textarea {
-      border-radius: 15px;
-      border: 1.5px solid var(--main-color);
-      padding: 1rem 1.5rem;
-      margin-bottom: 1rem;
-   }
-   .apply_content {
-      font-size: 1.8rem;
+   .apply_content div {
+      width: 90%;
    }
    .apply_content label {
-      margin-left: 0.8rem;
-      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+   }
+   .apply_content input {
+      width: 25rem;
+   }
+   .apply_button button {
+      font-size: 1.5rem;
+      width: 15rem;
+      height: 4.5rem;
    }
 }
