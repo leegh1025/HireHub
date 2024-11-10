@@ -32,7 +32,7 @@ environ.Env.read_env(BASE_DIR / '.env')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['13.125.25.250','hirehub.kr', 'localhost','127.0.0.1']
+ALLOWED_HOSTS = ['13.125.25.250','hirehub.kr', 'localhost','127.0.0.1']
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -169,12 +169,12 @@ LOGIN_FIELDS = ['email']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# CELERY_BROKER_URL = env('CELERY_BROKER_URL')
-# CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
-# CELERY_ACCEPT_CONTENT = env.list('CELERY_ACCEPT_CONTENT', default=['json'])
-# CELERY_TASK_SERIALIZER = env('CELERY_TASK_SERIALIZER', default='json')
-# CELERY_RESULT_SERIALIZER = env('CELERY_RESULT_SERIALIZER', default='json')
-# CELERY_TIMEZONE = env('CELERY_TIMEZONE', default='Asia/Seoul')
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
+CELERY_ACCEPT_CONTENT = env.list('CELERY_ACCEPT_CONTENT', default=['json'])
+CELERY_TASK_SERIALIZER = env('CELERY_TASK_SERIALIZER', default='json')
+CELERY_RESULT_SERIALIZER = env('CELERY_RESULT_SERIALIZER', default='json')
+CELERY_TIMEZONE = env('CELERY_TIMEZONE', default='Asia/Seoul')
 
 
 # 회원가입 이메일 인증

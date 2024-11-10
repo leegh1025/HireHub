@@ -144,3 +144,10 @@ main {
     justify-content: space-between;
     align-items: center;
 }
+
+.applicant_navbar {
+    align-items: flex-end;
+    border-bottom: 2px #ECECEC solid;
+    margin: 0 2rem;
+    padding-bottom: 1rem;
+}

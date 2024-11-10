@@ -38,4 +38,5 @@ urlpatterns = [
     path('document/profile/<int:pk>/delete/', views.delete_recording, name='delete_recording'),
     path('save_draft/<int:pk>/', views.save_draft, name='save_draft'),
     path('apply/<int:pk>/draft', views.load_draft, name='load_draft'),
+    path("applyresult/", views.apply_result, name='apply_result'),
 ]

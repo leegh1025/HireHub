@@ -1,0 +1,24 @@
+{% extends 'for_applicant/base.html' %}
+{% load static %}
+
+{% block content %}
+   <div class="result_container">
+      <div class="result_banner">
+         <div class="banner_content">
+            <p><span>P</span>otential</p>
+            <p><span id="i">I</span>nsight</p>
+            <p><span>R</span>ise</p>
+            <p><span id="o">O</span>vercome</p>
+         </div>
+         <div class="result_piro">
+            <p>@pirogramming_official</p>
+         </div>
+      </div>
+      <div class="result_content">
+         <img src="{% static 'images/apply_check.png' %}" alt="">
+         <p>지원서 제출이 성공적으로 완료되었습니다.</p>
+         <p>지원자님과 피로그래밍이 함께할 미래를 기대하겠습니다.</p>
+      </div>
+      <a href="{% url 'applicants:initial' %}">메인화면으로 돌아가기</a>
+   </div>
+{% endblock content %}

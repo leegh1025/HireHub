@@ -1,246 +1,222 @@
+header {
+   height: 9.5rem;
+}
 main {
    padding: 1rem 3rem;
+   height: calc(100vh - 9.5rem);
 }
 /* initial.html */
-.initial_btns a {
+.initial_btns {
+   margin-bottom: 1rem;
+}
+.initial_btns a, .initial_btns span, #logout_btn {
    text-decoration: none;
    font-size: 2rem;
-}
-.initial_btns span {
-   font-size: 2rem;
-}
-#logout_btn {
-   margin-left: 2rem;
+   color: #A3A3A3;
    margin-right: 3rem;
-   color: white;
-   background-color: var(--main-color);
-   padding: 1.3rem 2rem;
-   border-radius: 1rem;
 }
-.link_login {
-   color: black;
+.initial_btns a:hover, #logout_btn:hover {
+   text-decoration: underline;
+   text-decoration-thickness: 1.5px;
+   text-underline-offset : 3px;
 }
-.link_signup {
-   color: white;
-   background-color: var(--main-color);
-   padding: 1.3rem 2.5rem;
-   margin: 0 3rem;
-   margin-left: 2rem;
-   border-radius: 1rem;
-   font-weight: 600;
-}
-.initial_applicant {
+.initialApplicant_container1 {
    display: flex;
    flex-direction: column;
+   padding: 4rem 4rem;
    height: 100%;
-   align-items: center;
-   justify-content: center;
-   color: black;
 }
-.main_comment {
-   font-size: 5rem;
-}
-.main_logo {
-   font-family: var(--eng-font);
-   font-size: 6rem;
-   font-weight: bold;
-   color: var(--main-color);
-}
-.link_write {
-   color: white;
-   background-color: var(--main-color);
-   padding: 1.3rem 4rem;
-   margin-bottom: 1.5rem;
-   border-radius: 1rem;
-   font-weight: 500;
-   font-size: 3rem;
-}
-.link_check {
-   color: black;
-   font-size: 3rem;
-   font-weight: 500;
-   padding: 1.3rem 2rem;
-}
-.link_write:hover, .link_check:hover {
-   transform: translateY(-5px);
-   transition-duration: .5s;
-}
-
-/* apply_check.html */
-.status_container {
+.initialApplicant_container2 {
+   display: flex;
    height: 100%;
-   display: flex;
+   justify-content: space-between;
 }
-.status_left_container {
-   width: 50%;
-   height: 100%;
-   display: flex;
-   justify-content: center;
-   align-items: center;
+.introduce_container {
+   width: 70%;
 }
-.club_container {
-   width: 57rem;
-   height: 57.8rem;
-   box-shadow: 0 0.4rem 2rem rgba(28,101,239, 0.1);
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   justify-content: center;
-}
-.club_name {
+.introduce, .initialApplicant_container1 > p {
    font-size: 3.2rem;
-   margin-bottom: 13rem;
-}
-.club_description {
-   font-size: 6rem;
-   font-weight: 600;
-   margin-bottom: 3rem;
-}
-
-.status_right_container {
-   width: 50%;
-   height: 100%;
-   display: flex;
-   flex-direction: column;
-   justify-content: center;
-   align-items: center;
-}
-.status_logo {
-   font-family: var(--eng-font);
-   font-size: 6rem;
-   font-weight: bold;
-   color: var(--main-color);
-   margin-bottom: 17rem;
-   text-align: center;
-}
-#statuscheck_form {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-}
-#statuscheck_form input {
-   width: 50rem;
-   height: 6.5rem;
-   border-radius: 1.9rem;
-   font-size: 2.4rem;
-   color: black;
-   padding-left: 20px;
-   border: 2px solid var(--main-color);
    margin-bottom: 1.5rem;
+   margin-left: 1rem;
+   font-weight: 500;
 }
-.status_container button {
+.introduce_content {
+   background-color: #DFF8E0;
+   border-radius: 2rem;
+   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+   padding: 4rem;
+   height: 90%;
+   display: flex;
+   flex-direction: column;
+   justify-content: space-between;
+}
+.introduce_content p {
+   margin-bottom: 0;
+}
+.introduce_content img {
+   width: 16rem;
+   margin-bottom: 2rem;
+}
+.slogan {
    font-size: 2.4rem;
+   font-weight: normal;
+   margin-bottom: -1rem;
+}
+.piro {
+   font-size: 4.5rem;
    font-weight: bold;
-   color: var(--main-color);
-   margin-top: 7.4rem;
-   margin-left: 32rem;
-   display: flex;
-   align-items: center;
-}
-.status_container button img {
-   width: 3.5rem;
-   height: 3.5rem;
-}
-
-fieldset {
-   border: none !important;
-}
-
-/* apply_result.html */
-.applyResult_container {
-   height: 100%;
-   display: flex;
-   flex-direction: column;
-   justify-content: center;
-   align-items: center;
-   text-align: center;
-}
-.result_head {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-}
-.result_head p {
    font-family: var(--eng-font);
-   color: var(--main-color);
-   font-size: 6rem;
-   line-height: 8rem;
-   font-weight: 600;
+   line-height: 4rem;
 }
-.result_head img {
-   width: 9rem;
-   height: 9rem;
+.content {
+   margin-top: 3rem;
+   font-size: 2rem;
 }
-.result_comment, .resultno_comment {
-   font-size: 3.6rem;
-   margin-top: 7.8rem;
-   margin-bottom: 3rem;
-}
-.applyResult_container a {
+.introduce_content a {
+   font-size: 2.4rem;
    display: flex;
    align-items: center;
-   text-decoration: none;
-   font-size: 2rem;
-   font-weight: 600;
-   color: black;
+   justify-content: flex-end;
+   transition: all 0.3s ease-out;
 }
-.applyResult_container a img {
-   width: 2.4rem;
-   height: 2.4rem;
-   margin-right: 0.5rem;
+.introduce_content a span {
+   margin-right: 2rem;
+}
+.introduce_content a:hover {
+   transform: translateY(-5px);
+}
+
+.schedule_container {
+   width: 25%;
+
+}
+.schedule {
+   font-size: 2.5rem;
+   font-weight: 500;
+   width: 100%;
+   border-bottom: 1px solid rgba(0,0,0);
+   padding-bottom: 1rem;
+   margin-bottom: 2rem;
+   padding-left: 1rem;
+}
+#schedule_grid {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   padding: 0 1rem;
+   justify-items: start;
+   font-size: 2rem;
+   gap: 1.3rem;
 }
 
 /* signup.html */
-.signup_head {
+.signup_container, .login_container {
+   display: flex;
+   height: 100%;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+}
+.signupform_container {
+   display: flex;
+   align-items: center;
+}
+.signup_head, .login_head {
    margin-bottom: 50px;
+   font-size: 4rem;
+   font-weight: bold;
+   font-family: var(--eng-font);
 }
 #signup_form {
-   width: 500px;
-   align-items: normal;
+   width: 35rem;
+   display: flex;
+   flex-direction: column;
 }
-.signup_input {
-   width: 30rem;
-   height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 1.8rem;
-   border: 1.5px solid var(--main-color);
-   margin-bottom: 0px;
-}
+
 [id$="box"] {
    display: flex;
    align-items: center;
    margin-bottom: 1rem;
+   justify-content: space-between;
 }
 [id$="box"] label {
    font-size: 1.5rem;
    display: inline-block;
-   width: 90px;
-   margin-left: 10px;
+   /* width: 15rem; */
    font-weight: 500;
 }
-[id$="box"] button {
-   font-size: 1rem;
-   display: inline-block;
-   width: 50px;
-   margin-left: 30px;
+
+.signup_input, #login_form input {
+   width: 25rem;
+   height: 4.4rem;
+   border-radius: 1rem;
+   font-size: 1.3rem;
+   border: 3px solid #F3F3F3;
+   margin-bottom: 0px;
+   padding-left: 10px;
+}
+.signup_email {
+   display: flex;
+   width: 47rem;
+   justify-content: space-between;
+   align-items: center;
+}
+#email_box {
+   flex-direction: column;
+   align-items: flex-start;
+}
+#email_box input {
+   width: 35rem;
+   margin-top: 10px;
+}
+
+#code_box label {
+   color: #6A6A6A;
+}
+#code_box input {
+   width: 17rem;
+   border: none;
+   border-bottom: 2px solid #F3F3F3;
+   border-radius: 0;
+   margin-right: 1rem;
+}
+.code_send {
+   width: 35rem;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+}
+#send_code_btn {
+   width: 10rem;
+   height: 4rem;
+   border-radius: 7px;
    background-color: var(--main-color);
    color: white;
-   padding: 10px 5px;
-   border-radius: 1rem;
    font-weight: 500;
+   font-size: 1.4rem;
+   margin-top: 1.5rem;
 }
+#verify_code_btn {
+   width: 7rem;
+   height: 3rem;
+   border-radius: 0.7rem;
+   background-color: #6A6A6A;
+   color: white;
+   font-weight: 500;
+   font-size: 1.3rem;
+}
+
 .button_container {
    display: flex;
    justify-content: center;
    align-items: center;
 }
-#signup_btn {
+#signup_btn, #login_btn {
    background-color: var(--main-color);
    color: white;
    width: 35rem;
-   height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 2rem;
+   height: 6rem;
+   border-radius: 1rem;
+   font-size: 2.4rem;
    font-weight: bold;
    margin-top: 5rem;
 }
@@ -250,83 +226,186 @@ fieldset {
 }
 #verification_status p {
    margin: 0px;
-   margin-bottom: 10px;
    font-size: 1.5rem;
    font-weight: 500;
 }
 
 /* login.html */
-.login_head {
-   margin-bottom: 50px;
-}
 #login_form {
-   width: 500px;
+   width: 35rem;
    align-items: center;
 }
 #login_form input {
-   width: 50rem;
-   height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 1.8rem;
-   border: 1.5px solid var(--main-color);
-   margin-bottom: 10px;
-   padding: 0 2rem;
-}
-#login_form button {
-   background-color: var(--main-color);
-   color: white;
    width: 35rem;
    height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 2rem;
-   font-weight: bold;
-   margin-top: 5rem;
+   margin-top: 0.8rem;
+   margin-bottom: 2.4rem;
+}
+#login_form label {
+   font-size: 1.5rem;
+   font-weight: 500;
+   margin-left: 1rem;
 }
 .link_container {
    display: flex;
    align-items: center;
    justify-content: space-between;
-   width: 25rem;
-}
-.divider, .findpwd_link {
-   margin-top: 1.8rem;
+   width: 22rem;
+   margin-top: 2.6rem;
    font-size: 1.6rem;
+   color: #9A9A9A;
 }
-.signup_link:hover, .findpwd_link:hover {
+.link_container a {
+   color: #9A9A9A;
+}
+.link_container a:hover {
    text-decoration: underline;
 }
 
 /* password_reset.html */
+.password_reset {
+   display: flex;
+   width: 94rem;
+   height: 100%;
+   flex-direction: column;
+   align-items: flex-start;
+   justify-content: center;
+   margin: auto;
+}
+.password_reset_container {
+   width: 100%;
+   height: 50rem;
+   background-color: #F8F8F8;
+   padding: 5rem 7rem;
+}
 .password_reset_form_container {
    display: flex;
    flex-direction: column;
    align-items: center;
+   margin-top: 8rem;
+}
+#password_reset_form {
+   width: 50rem;
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-end;
 }
 .password_reset_head {
-   margin-bottom: 0;
+   margin-bottom: 1.8rem;
+   font-size: 3rem;
+   font-weight: 500;
 }
-.password_reset_form_container p {
+.password_reset_intro {
+   display: flex;
+   align-items: center;
+   gap: 1rem;
+}
+.password_reset_intro img {
+   width: 3.3rem;
+}
+.password_reset_intro span {
+   font-size: 1.6rem;
+}
+#password_reset_form {
    font-size: 1.5rem;
-   margin-bottom: 8rem;
 }
-#password_reset_form p label {
-   display: none;
+.email_box {
+   display: flex;
+   flex-direction: column;
 }
-#id_email, #new_password1, #new_password2 {
-   width: 40rem;
-   height: 5rem;
-   border-radius: 1.5rem;
-   font-size: 1.8rem;
-   border: 1.5px solid var(--main-color);
-   padding: 0 2rem;
+.email_box label {
+   font-weight: 500;
+   margin-left: 1rem;
 }
-#new_password1 {
-   margin-bottom: 1rem;
+.email_box input, #password_reset_confirm_form input {
+   margin-top: 0.8rem;
+   width: 33rem;
+   height: 4.5rem;
+   border: 3px solid #F3F3F3;
+   border-radius: 0.7rem;
+   padding: 1rem;
 }
-#new_password2 {
-   margin-bottom: 8rem;
+
+#password_reset_confirm_form {
+   display: flex;
+   flex-direction: column;
+   align-items: flex-start;
+   font-size: 1.5rem;
 }
+#password_reset_confirm_form label {
+   font-weight: 500;
+   margin-left: 1rem;
+}
+
 #password_reset_btn , #password_reset_confirm_btn {
    margin-top: 0;
    color: white;
+   background-color: #A3A3A3;
+   border-radius: 0.5rem;
+   width: 12rem;
+   height: 4.4rem;
+   font-weight: 600;
+}
+#password_reset_confirm_btn {
+   background-color: var(--main-color);
+   width: 33rem;
+   height: 5.9rem;
+   font-size: 2.4rem;
+   margin-top: 7rem;
+}
+
+/* apply_result.html */
+.result_container {
+   display: flex;
+   height: 100%;
+   flex-direction: column;
+   align-items: center;
+   justify-content: space-between;
+   padding: 3rem 0;
+}
+.result_banner {
+   background-color: black;
+   width: 100%;
+   border-radius: 1.6rem;
+   padding: 2rem 4rem;
+   color: white;
+   display: flex;
+   font-family: var(--eng-font);
+   justify-content: space-between;
+   align-items: flex-end;
+}
+.banner_content p {
+   font-size: 2rem;
+   font-weight: 600;
+   line-height: 2.8rem;
+}
+.banner_content p span {
+   color: #4EFF00;
+   font-size: 3rem;
+}
+#i, #o {
+   color: #618C4E;
+}
+.result_piro {
+   font-size: 1.6rem;
+   font-weight: 500;
+}
+.result_content {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+.result_content img {
+   width: 8.8rem;
+   margin-bottom: 3.4rem;
+}
+.result_content p {
+   font-size: 2.4rem;
+   font-weight: 500;
+}
+.result_container a {
+   color: #BDBCBC;
+   text-decoration: underline;
+   text-underline-offset: 2px;
+   font-size: 2rem;
 }
