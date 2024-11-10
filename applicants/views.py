@@ -1043,3 +1043,15 @@ def download_default_excel(request):
     
     wb.save(response)
     return response
+
+def apply_result(request):
+    # 현재 로그인된 사용자 정보와 관련된 제출 상태를 DB에서 조회
+    try:
+        application = Application.objects.get(applicant=request.user, is_drafted=False)
+        submitted = True
+    except Application.DoesNotExist:
+        submitted = False
+    context = {
+        'submitted': submitted,
+    }
+    return render(request, 'for_applicant/apply_result.html', context) if submitted else redirect('applicants:initial')
