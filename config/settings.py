@@ -34,6 +34,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['3.36.91.98','hirehub.kr', 'localhost','127.0.0.1']
 
+
 # Application definition
 
 INSTALLED_APPS = [
