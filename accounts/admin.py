@@ -20,5 +20,5 @@ class CustomUserAdmin(admin.ModelAdmin):
    ordering = ('name', )
    filter_horizontal = ('user_permissions', )
 
-admin.site.register(Interviewer, UserAdmin)
+admin.site.register(Interviewer, CustomUserAdmin)
 admin.site.register(InterviewTeam)
