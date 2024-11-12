@@ -32,8 +32,7 @@ environ.Env.read_env(BASE_DIR / '.env')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['13.125.25.250','hirehub.kr', 'localhost','127.0.0.1']
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['3.36.91.98','hirehub.kr', 'localhost','127.0.0.1']
 
 # Application definition
 
