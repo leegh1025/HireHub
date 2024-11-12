@@ -62,7 +62,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
-
+CSRF_TRUSTED_ORIGINS = ['https://hirehub.kr']
 
 TEMPLATES = [
     {
