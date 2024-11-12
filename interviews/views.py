@@ -10,6 +10,7 @@ load_dotenv()
 # OpenAI API 키 설정
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
+
 def generate_questions(request, application_id):
     if request.user.is_authenticated:
         application = Application.objects.get(pk=application_id)
