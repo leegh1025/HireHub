@@ -88,6 +88,8 @@ document.getElementById('verify_code_btn').addEventListener('click', function() 
    }).then(response => response.json())
    .then(data => {
       var statusDiv = document.getElementById('verification_status');
+      var codeBox = document.getElementById('code_box');
+      codeBox.style.width = '47rem';
       if (data.success) {
          statusDiv.innerHTML = '<p style="color: green;">🎉 인증 성공! 🎉</p>';
          document.getElementById('signup_btn').disabled = false; // 회원가입 버튼 활성화

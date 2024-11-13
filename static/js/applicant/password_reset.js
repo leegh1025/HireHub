@@ -15,7 +15,7 @@ function getCSRFToken() {
 document.getElementById('password_reset_btn').addEventListener('click', function(event) {
    event.preventDefault();
 
-   var email = document.getElementById('id_email').value;
+   var email = document.getElementById('email').value;
    const csrfToken = getCSRFToken();
 
    fetch('/applicants/password_reset/', {

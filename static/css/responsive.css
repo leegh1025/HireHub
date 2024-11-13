@@ -1,102 +1,120 @@
-@media (min-width: 691px) {
-   .responsive_initial_btns {
-      display: none;
-   }
-}
-
-@media (max-width: 690px) {
+@media (max-width: 767px) {
    header {
-      height: 100px;
+      height: 13rem;
    }
    main {
-      height: calc(100vh - 100px);
+      height: calc(100vh - 13rem);
    }
-   .initial_btns {
-      display: none;
+   /* base.html, initial.html */
+   #mainLogo {
+      width: 12rem;
    }
-   .applicant_navbar {
-      justify-content: center;
+   .initial_btns span, .initial_btns a, #logout_btn {
+      font-size: 1.2rem;
    }
-   .main_comment {
-      margin-top: 2rem;
+   .initialApplicant_container1 {
+      padding: 2rem 0;
    }
-   .responsive_initial_btns {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 18rem;
-   }
-   .responsive_initial_btns a {
-      text-decoration: none;
+   .initialApplicant_container1 > p {
       font-size: 2rem;
    }
-   .link_write {
-      padding: 0.8rem 4rem;
-      margin: 0;
-      margin-bottom: 1.5rem;
-   }
-
-   .status_container {
+   .initialApplicant_container2 {
       flex-direction: column;
+      justify-content: flex-start;
    }
-   .status_left_container, .status_right_container {
+   .introduce_container {
       width: 100%;
    }
-   .status_right_container {
-      margin-bottom: 4rem;
+   .introduce_content {
+      padding: 2rem 1rem;
+      height: 26rem;
    }
-   .club_container {
-      width: 25rem;
-      height: 20rem;
+   .content_top img {
+      width: 8rem;
    }
-   .club_name {
-      margin: 0;
+   .slogan {
+      font-size: 1.4rem;
    }
-   #statuscheck_form input {
-      width: 35rem;
-      height: 5.5rem;
-      font-size: 2rem;
-      margin-bottom: 1rem;
+   .piro {
+      font-size: 2.4rem;
    }
-   .status_container button {
-      margin: 0;
-      margin-top: 2rem;
-      margin-bottom: 6rem;
-   }
-   .club_description, .status_logo {
+   .content {
       display: none;
    }
+   .link_write span {
+      font-size: 1.3rem;
+   }
+   .schedule_container {
+      width: 100%;
+      margin-top: 4rem;
+   }
+   .schedule {
+      font-size: 2rem;
+   }
+   #schedule_grid div {
+      font-size: 1.6rem;
+   }
 
-   .result_head img {
-      width: 6rem;
-      height: 6rem;
+   /* signup.html */
+   .signup_head, .login_head {
+      font-size: 3.2rem;
    }
-   .result_head p {
-      font-size: 4.5rem;
+   .signup_email {
+      width: 100%;
    }
-   .result_comment, .resultno_comment {
-      font-size: 3rem;
+   #email_box input {
+      width: 24rem;
+   }
+
+   /* password_reset.html */
+   .password_reset {
+      justify-content: flex-start;
+      margin-top: 2rem;
+      width: 100%;
+   }
+   .password_reset_head { 
       margin-bottom: 1rem;
-      margin-top: 5.5rem;
    }
-   .applyResult_container a {
-      font-size: 1.5rem;
-      margin-bottom: 6rem;
+   .password_reset_container {
+      padding: 2rem 1.5rem;
+      height: 60rem;
    }
-   .applyResult_container a img {
-      width: 1.8rem;
-      height: 1.8rem;
+   .password_reset_intro img {
+      width: 2.3rem;
    }
-}
+   .password_reset_intro span {
+      font-size: 1.3rem;
+   }
+   #password_reset_form {
+      width: 100%;
+      align-items: center;
+      flex-direction: column;
+   }
+   #password_reset_form button {
+      margin-top: 2rem;
+      font-size: 2rem;
+   }
+   #password_reset_confirm_btn {
+      font-size: 2rem;
+      height: 5.4rem;
+   }
 
-@media (max-width: 580px) {
-   .main_comment {
-      text-align: center;
-      font-size: 4rem;
-      line-height: 5rem;
+   /* apply_result.html */
+   .result_banner {
+      padding: 2rem 1.5rem;
+      height: 25rem;
+      flex-direction: column;
+      align-items: flex-start;
    }
-   .main_logo {
-      font-size: 5rem;
-      line-height: 6rem;
+   .result_piro {
+      margin-left: auto;
+      font-size: 1.4rem;
+   }
+   .result_content img {
+      width: 7rem;
+      margin-bottom: 2.6rem;
+   }
+   .result_content p, .result_container a {
+      font-size: 1.5rem;
    }
 }
