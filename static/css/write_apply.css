@@ -53,6 +53,10 @@ main {
    flex-direction: column;
    align-items: flex-start !important;
    margin-top: 1.5rem;
+   width: auto !important;
+}
+#id_possible_date {
+   width: 100%;
 }
 .possible_date_content label {
    display: flex;
@@ -111,12 +115,20 @@ main {
    font-weight: 600;
    font-size: 2.4rem;
    border-radius: 1.2rem;
-   
-   /* position: relative;
-   left: 50%;
-   bottom: 0;
-   transform: translate(-50%, 0);
-   margin: 20px 0; */
+   transition: all 0.3s ease-out;
+}
+.apply_button button:hover {
+   transform: translateY(-3px);
+   background-color: #7CE84C;
+   color: black;
+}
+
+.question textarea {
+   resize: none;
+}
+
+input[type="file"] {
+   height: auto;
 }
 
 @media (max-width: 767px) {
@@ -128,7 +140,7 @@ main {
       padding: 2rem 1.5rem;
    }
    .apply_content div {
-      width: 90%;
+      width: 100%;
    }
    .apply_content label {
       font-size: 1.5rem;
