@@ -189,4 +189,4 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER              # 응답 메일 관련 설정
 
 SESSION_COOKIE_SECURE = True  # 개발 환경에서만 False로 설정, 실제 배포 환경에서는 True
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_DOMAIN = 'hirehub.kr'
+SESSION_COOKIE_DOMAIN = '.hirehub.kr'
