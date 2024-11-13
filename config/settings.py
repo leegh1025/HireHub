@@ -62,8 +62,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
-CSRF_TRUSTED_ORIGINS = ['https://hirehub.kr', 'https://www.hirehub.kr']
-CSRF_COOKIE_SECURE = True
+
 
 TEMPLATES = [
     {
@@ -194,3 +193,6 @@ SESSION_COOKIE_DOMAIN = '.hirehub.kr'
 
 SESSION_COOKIE_AGE = 1209600  # 2주
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+CSRF_TRUSTED_ORIGINS = ['https://hirehub.kr']
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_DOMAIN = 'hirehub.kr'
