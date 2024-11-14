@@ -39,7 +39,7 @@
                <li class="question">
                   <label for="question_{{question.id}}">{{question.question_text}}</label>
                   {% if question.allow_file_upload %}
-                     <input type="file" name="file_{{question.id}}">
+                     <input type="file" name="file_{{question.id}}" required>
                   {% else %}
                   <textarea name="answer_{{ question.id }}" cols="50" rows="5">{{ answers|dict_get:question.id }}</textarea>
                   {% endif %}
@@ -104,15 +104,25 @@
          });
       }
       
-      if (!valid) {
-         if (invalidFieldName == "") {
-            alert("모든 질문에 답변을 작성해주세요");
-         } else {
-            alert(invalidFieldName + "을(를) 작성해주세요");
+      if (valid) {
+      let fileInputs = document.querySelectorAll("input[type='file']");
+      fileInputs.forEach(function(fileInput) {
+         if (fileInput.required && fileInput.files.length === 0 && valid) {
+            valid = false;
+            invalidField = fileInput;
          }
-         invalidField.focus();
-         return false;
+      });
+   }
+
+   if (!valid) {
+      if (invalidFieldName == "") {
+         alert("모든 필수 항목을 작성하거나 파일을 업로드해주세요.");
+      } else {
+         alert(invalidFieldName + "을(를) 작성해주세요");
       }
+      invalidField.focus();
+      return false;
+   }
 
       if (valid) {
          const form = document.getElementById("applyForm");
