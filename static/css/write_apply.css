@@ -32,7 +32,6 @@ main {
    font-size: 1.8rem;
 }
 .apply_content div {
-   width: 45rem;
    display: flex;
    align-items: center;
    justify-content: space-between;
@@ -40,20 +39,37 @@ main {
 }
 .apply_content label {
    font-weight: 500;
+   font-size: 1.6rem;
 }
 .apply_content input {
-   width: 37rem;
+   width: 60%;
    height: 4rem;
-   font-size: 1.8rem;
+   font-size: 1.6rem;
    border: 1.5px solid #7CE84C;
    border-radius: 0.7rem;
    padding: 1rem;
+}
+.major_description, .residence_description {
+   flex-direction: column;
+   align-items: flex-start !important;
+   justify-content: center;
+   margin: 0 !important;
+   width: 39%;
+}
+.major_description p, .residence_description p {
+   font-size: 1.4rem;
 }
 .possible_date_content {
    flex-direction: column;
    align-items: flex-start !important;
    margin-top: 1.5rem;
    width: auto !important;
+}
+.apply_content div select {
+   border: 1.5px solid #7CE84C;
+   height: 3rem;
+   padding: 0 .5rem;
+   font-size: 1.6rem;
 }
 #id_possible_date {
    width: 100%;
@@ -79,8 +95,8 @@ main {
 .question textarea {
    width: 100%;
    border: none;
-   padding: 1rem 2rem;
-   margin-bottom: 2rem;
+   padding: 1rem 1.5rem;
+   margin-bottom: 4rem;
    color: black;
    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
    font-size: 1.5rem;
@@ -152,5 +168,15 @@ input[type="file"] {
       font-size: 1.5rem;
       width: 15rem;
       height: 4.5rem;
+   }
+   .residence {
+      flex-direction: column;
+      align-items: flex-start !important;
+   }
+   .residence_description {
+      margin-bottom: .5rem !important;
+   }
+   #id_possible_date {
+      flex-direction: column;
    }
 }
