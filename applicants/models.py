@@ -79,9 +79,9 @@ class Application(models.Model):
     phone_number = models.CharField(max_length=15)
     school = models.CharField(max_length=100)
     major = models.CharField(max_length=100)
-    major_type = models.CharField(max_length=100, blank=True, null=True)
-    year = models.CharField(max_length=20, blank=True, null=True)
-    residence = models.CharField(max_length=100, blank=True, null=True)
+    major_type = models.CharField(max_length=100)
+    year = models.CharField(max_length=20)
+    residence = models.CharField(max_length=100)
     submission_date = models.DateTimeField(auto_now_add=True)
     interviewer = models.ManyToManyField(
         Interviewer,
