@@ -184,12 +184,16 @@ EMAIL_PORT = 587                                # 서버 포트
 EMAIL_HOST_USER = env('EMAIL_MAIL')               # 우리가 사용할 mail
 EMAIL_HOST_PASSWORD = env('EMAIL_PWD')            # 우리가 사용할 mail의 pwd
 
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+
 EMAIL_USE_TLS = True                              # TLS 보안 설정
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER              # 응답 메일 관련 설정
 
 SESSION_COOKIE_SECURE = True  # 개발 환경에서만 False로 설정, 실제 배포 환경에서는 True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_DOMAIN = 'hirehub.kr'
+
 
 SESSION_COOKIE_AGE = 1209600  # 2주
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
