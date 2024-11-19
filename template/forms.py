@@ -18,13 +18,15 @@ class ApplicationTemplateForm(forms.ModelForm):
 class ApplicationQuestionForm(forms.ModelForm):
     class Meta:
         model = ApplicationQuestion
-        fields = ['question_text', "allow_file_upload", "file_upload"]
+        fields = ['question_text', "allow_file_upload", "file_upload", "max_length"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
     
         if self.instance.allow_file_upload:
             self.fields['file_upload'] = forms.FileField(required=False)
+        
+        self.fields['max_length'].widget = forms.NumberInput(attrs={'placeholder': '최대 글자 수를 입력하세요(예: 350)'})
 
 class InterviewTemplateForm(forms.ModelForm):
     class Meta:
