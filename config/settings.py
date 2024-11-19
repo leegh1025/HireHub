@@ -15,7 +15,7 @@ import os
 import secrets
 import environ
 
-SECRET_KEY = secrets.token_urlsafe(50)
+# SECRET_KEY = secrets.token_urlsafe(50)
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,7 +27,7 @@ environ.Env.read_env(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY=env('SECRET_KEY')
+SECRET_KEY=env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -62,7 +62,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
-CSRF_TRUSTED_ORIGINS = ['https://hirehub.kr']
+
 
 TEMPLATES = [
     {
@@ -187,5 +187,12 @@ EMAIL_HOST_PASSWORD = env('EMAIL_PWD')            # 우리가 사용할 mail의 
 EMAIL_USE_TLS = True                              # TLS 보안 설정
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER              # 응답 메일 관련 설정
 
-SESSION_COOKIE_SECURE = False  # 개발 환경에서만 False로 설정, 실제 배포 환경에서는 True
+SESSION_COOKIE_SECURE = True  # 개발 환경에서만 False로 설정, 실제 배포 환경에서는 True
 SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_DOMAIN = 'hirehub.kr'
+
+SESSION_COOKIE_AGE = 1209600  # 2주
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+CSRF_TRUSTED_ORIGINS = ['https://hirehub.kr']
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_DOMAIN = 'hirehub.kr'

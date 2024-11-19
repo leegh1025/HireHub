@@ -1,9 +1,9 @@
 @media (max-width: 767px) {
    header {
-      height: 13rem;
+      height: 10rem;
    }
    main {
-      height: calc(100vh - 13rem);
+      height: calc(100vh - 10rem);
    }
    /* base.html, initial.html */
    #mainLogo {
