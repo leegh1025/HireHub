@@ -299,7 +299,7 @@ def change_status(request, status_zone_id, applicant_id):
             
 def document(request):
     if request.user.is_authenticated:
-        applicants = Application.objects.all()
+        applicants = Application.objects.filter(is_drafted=False)
         ctx = {"applicants": applicants}
         return render(request, "applicant/document.html", ctx)
     else:
@@ -605,6 +605,7 @@ def profile(request, pk):
     if request.user.is_authenticated:
         applicant = get_object_or_404(Application, pk=pk)
         answers = Answer.objects.filter(application=applicant)
+        print(answers)
         # 리코딩
         recording = AudioRecording.objects.filter(application=applicant).first()
 
@@ -854,24 +855,30 @@ def apply(request, pk):
             form.save_m2m()
 
             answers = {}
+
             for question in template.questions.all():
                 answer_text = request.POST.get(f'answer_{question.id}')
                 uploaded_file = request.FILES.get(f'file_{question.id}')
 
+                # Answer 객체를 가져오거나 생성
                 answer, created = Answer.objects.get_or_create(
                     application=applyContent,
-                    question=question
+                    question=question,
                 )
 
-                # 답변을 업데이트
-                if answer_text:
-                    answer.answer_text = answer_text
-                    answers[question.id] = answer_text  # 기존 로직의 answers에 반영
-                if uploaded_file:
+                # 새로 생성된 경우 초기화
+                if created:
+                    answer.answer_text = answer_text or ""
                     answer.file_upload = uploaded_file
 
-                # 최종 제출이므로 임시 저장 상태를 해제
-                answer.is_drafted = False
+                # 기존 객체 업데이트
+                else:
+                    if answer_text:
+                        answer.answer_text = answer_text
+                    if uploaded_file:
+                        answer.file_upload = uploaded_file
+
+                # 항상 저장
                 answer.save()
                 
             transaction.on_commit(lambda: process_application.apply_async(args=(applyContent.id, answers), countdown=5))
