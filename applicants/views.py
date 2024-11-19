@@ -1034,9 +1034,8 @@ def download_default_excel(request):
     
             # 코멘트
             comments_col = get_column_letter(5 + len(question_headers) + 2)
-            comment = application.comments.filter(interviewer=interviewer).first()
-            ws[f'{comments_col}{row_num}'] = comment.text if comment else ""
-            row_num += 1  
+            ws[f'{comments_col}{row_num}'] = evaluation.comments if evaluation and evaluation.comments else ""
+            row_num += 1
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename={default_evaluate.title}_평가표.xlsx'
