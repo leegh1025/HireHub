@@ -299,7 +299,7 @@ def change_status(request, status_zone_id, applicant_id):
             
 def document(request):
     if request.user.is_authenticated:
-        applicants = Application.objects.all()
+        applicants = Application.objects.filter(is_drafted=False)
         ctx = {"applicants": applicants}
         return render(request, "applicant/document.html", ctx)
     else:
