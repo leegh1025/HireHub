@@ -47,10 +47,13 @@ class ApplicationTemplateCreateView(View):
 
                 questions = [v for k, v in req.POST.items() if k.startswith('questions[')]
                 for i, question_text in enumerate(questions):
+                    max_length = req.POST.get(f'max_length_{i}', None)
+                    max_length = int(max_length) if max_length else None  # 숫자로 변환
                     allow_file_upload = req.POST.get(f'allow_file_upload_{i}', 'off') == 'on'  
                     ApplicationQuestion.objects.create(
                         template=template,
                         question_text=question_text,
+                        max_length=max_length,
                         allow_file_upload=allow_file_upload  # 체크박스 값 반영
                     )
             

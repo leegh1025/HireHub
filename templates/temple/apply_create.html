@@ -33,6 +33,9 @@
                     <div>
                         <input type="text" id="new_question_text" placeholder="항목을 입력하세요">
                         <label>
+                            <input type="number" id="max_length" placeholder="최대 글자 수를 입력하세요">
+                        </label>
+                        <label>
                             <input type="checkbox" id="allow_file_upload"> 파일 업로드 허용
                         </label>
                         <button type="button" onclick="addQuestion()">추가하기</button>
@@ -68,6 +71,7 @@
 
         function addQuestion() {
             const questionText = document.getElementById('new_question_text').value;
+            const maxLength = document.getElementById('max_length').value;
             const allowFileUpload = document.getElementById('allow_file_upload').checked;
 
             if (questionText) {
@@ -85,6 +89,12 @@
                 questionInput.name = `questions[${questionCounter}]`;
                 questionInput.value = questionText;
 
+                const maxLengthInput = document.createElement('input');
+                maxLengthInput.type = 'hidden';
+                maxLengthInput.id = `max_length_${questionCounter}`;
+                maxLengthInput.name = `max_length_${questionCounter}`;
+                maxLengthInput.value = maxLength ? maxLength : '';
+
                 const allowFileInput = document.createElement('input');
                 allowFileInput.type = 'hidden';
                 allowFileInput.id = `allow_file_upload_${questionCounter}`;
@@ -93,12 +103,14 @@
 
                 listItem.appendChild(questionLabel);
                 form.appendChild(questionInput);
+                form.appendChild(maxLengthInput);
                 form.appendChild(allowFileInput); 
                 questionList.appendChild(listItem);
                 
                 document.getElementById('new_question_text').value = '';
+                document.getElementById('max_length').vlaue = '';
                 document.getElementById('allow_file_upload').checked = false; 
-                console.log(`Added question: ${questionText}`);
+                console.log(`Added question: ${questionText}, maxLength: ${maxLength}`);
 
                 questionCounter++;
             }

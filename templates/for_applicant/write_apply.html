@@ -59,7 +59,8 @@
                   {% if question.allow_file_upload %}
                      <input type="file" name="file_{{question.id}}" required>
                   {% else %}
-                  <textarea name="answer_{{ question.id }}" cols="50" rows="8">{{ answers|dict_get:question.id }}</textarea>
+                  <textarea name="answer_{{ question.id }}" cols="50" rows="8"
+                            maxlength="{{ question.max_length }}">{{ answers|dict_get:question.id }}</textarea>
                   {% endif %}
                </li>
             {% endfor %}
