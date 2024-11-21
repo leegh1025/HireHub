@@ -23,6 +23,7 @@ main {
 .apply_description {
    font-size: 1.6rem;
    margin-bottom: 3rem;
+   white-space: pre-wrap;
 }
 
 .apply_content {
