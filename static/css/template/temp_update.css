@@ -293,4 +293,7 @@
     padding: 5px 0 5px 0 !important;
 
 }
+.questionList label {
+    white-space: pre-wrap; /* 개행 처리 */
+}
 
