@@ -1,2 +1,0 @@
-let audioChunks = [];
-let mediaRecoder;

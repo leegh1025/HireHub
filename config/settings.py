@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'interviews',
     'evaluations',
     'template',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -141,19 +142,38 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "/static/"
+# STATIC_URL = "/static/"
+# 정적 파일 설정
+# S3 관련 설정
+#S3 관련
+
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = env('AWS_S3_REGION_NAME')
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
+STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+	}
+}
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MEDIA_URL = "/media/"
+# MEDIA_URL = "/media/"
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 AUTHENTICATION_BACKENDS = [
@@ -164,10 +184,6 @@ AUTHENTICATION_BACKENDS = [
 AUTH_USER_MODEL = 'accounts.Interviewer'
 LOGIN_FIELDS = ['email']
 
-
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CELERY_BROKER_URL = env('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
@@ -195,7 +211,7 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_DOMAIN = 'hirehub.kr'
 
 
-SESSION_COOKIE_AGE = 1209600  # 2주
+SESSION_COOKIE_AGE = 60 * 60 * 24  # 하루
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 CSRF_TRUSTED_ORIGINS = ['https://hirehub.kr']
 CSRF_COOKIE_SECURE = True
