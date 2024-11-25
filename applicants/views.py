@@ -51,13 +51,14 @@ from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm, CustomPassw
 def initial(request):
     template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
     # 목표 시간을 설정합니다.
-    target_time = timezone.make_aware(datetime(2024, 12, 6, 23, 59, 59), timezone=timezone.get_current_timezone())
-    print(target_time)
+    start_time = timezone.make_aware(datetime(2024, 11, 29, 0, 0, 0), timezone=timezone.get_current_timezone())
+    finish_time = timezone.make_aware(datetime(2024, 12, 6, 23, 59, 59), timezone=timezone.get_current_timezone())
+    
     # 현재 시간 가져오기
     current_time = timezone.localtime(timezone.now())
-    print(current_time)
+    
     # 목표 시간을 지났는지 여부를 계산
-    time_over = current_time >= target_time
+    time_over = start_time <= current_time <= finish_time
     print(time_over)
 
     context = {'template': template, 'time_over': time_over,}
