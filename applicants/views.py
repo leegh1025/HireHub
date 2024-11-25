@@ -51,7 +51,7 @@ from .forms import CommentForm, QuestionForm, AnswerForm, ApplyForm, CustomPassw
 def initial(request):
     template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
     # 목표 시간을 설정합니다.
-    target_time = timezone.make_aware(datetime(2024, 11, 28, 23, 59, 59), timezone=timezone.get_current_timezone())
+    target_time = timezone.make_aware(datetime(2024, 11, 25, 20, 23, 59), timezone=timezone.get_current_timezone())
     print(target_time)
     # 현재 시간 가져오기
     current_time = timezone.localtime(timezone.now())
