@@ -52,7 +52,7 @@ def initial(request):
     template = ApplicationTemplate.objects.get(is_default='1') # pk 변경 필요
     # 목표 시간을 설정합니다.
     start_time = timezone.make_aware(datetime(2024, 11, 29, 0, 0, 0), timezone=timezone.get_current_timezone())
-    finish_time = timezone.make_aware(datetime(2024, 12, 6, 23, 59, 59), timezone=timezone.get_current_timezone())
+    finish_time = timezone.make_aware(datetime(2024, 12, 11, 23, 59, 59), timezone=timezone.get_current_timezone())
     
     # 현재 시간 가져오기
     current_time = timezone.localtime(timezone.now())
